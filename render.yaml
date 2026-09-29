@@ -13,7 +13,7 @@ services:
       - key: GROQ_BASE_URL
         value: https://api.groq.com/openai/v1
       - key: EMBEDDING_MODEL
-        value: sentence-transformers/all-MiniLM-L6-v2
+        value: fallback
       - key: EMBEDDING_DEVICE
         value: cpu
       - key: ENABLE_KNOWLEDGE_GRAPH

@@ -26,6 +26,10 @@ class EmbeddingEngine:
 
     def _get_st_model(self):
         if self._st_model is None:
+            if self.model_name.lower() in ("fallback", "mock", "none", "hash"):
+                self._st_model = "fallback"
+                self.embedding_source = "fallback"
+                return self._st_model
             try:
                 # pyrefly: ignore [missing-import]
                 from sentence_transformers import SentenceTransformer
