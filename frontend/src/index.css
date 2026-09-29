@@ -51,6 +51,7 @@ body {
   color: var(--text-primary);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 
 /* Custom Scrollbars */
@@ -288,7 +289,9 @@ p {
   color: var(--jm-dark-blue);
 }
 
-@media (max-width: 760px) {
+/* Some Android browsers report a wider layout viewport even with the viewport
+   meta tag, so start the compact navigation at tablet width. */
+@media (max-width: 1024px) {
   .app-sidebar {
     position: fixed !important;
     inset: 0 auto 0 0;
