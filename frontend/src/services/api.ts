@@ -8,6 +8,7 @@ const configuredApiBase = import.meta.env.VITE_API_BASE_URL?.trim();
 const API_BASE = (configuredApiBase && !configuredApiBase.includes('onrender.com'))
   ? configuredApiBase.replace(/\/$/, '')
   : '/api';
+const UPLOAD_API_BASE = 'https://insightgraph-rag-api.onrender.com/api';
 
 export async function fetchMetrics(): Promise<SystemMetrics> {
   const res = await fetch(`${API_BASE}/metrics`);
@@ -35,11 +36,22 @@ export async function fetchDocumentDetails(id: string): Promise<{
 export async function uploadDocument(file: File): Promise<any> {
   const formData = new FormData();
   formData.append('file', file);
-  const res = await fetch(`${API_BASE}/documents/upload`, {
+  // Send multipart uploads directly to Render. This avoids Vercel's proxy
+  // request-size/streaming limits on mobile and large PDF uploads.
+  const res = await fetch(`${UPLOAD_API_BASE}/documents/upload`, {
     method: 'POST',
     body: formData,
   });
-  if (!res.ok) throw new Error('Failed to upload document');
+  if (!res.ok) {
+    let detail = 'Failed to upload document';
+    try {
+      const payload = await res.json();
+      detail = payload.detail || detail;
+    } catch {
+      // Keep the fallback message when the server did not return JSON.
+    }
+    throw new Error(detail);
+  }
   return res.json();
 }
 

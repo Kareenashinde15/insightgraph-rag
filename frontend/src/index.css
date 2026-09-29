@@ -187,6 +187,15 @@ p {
   box-shadow: 0 0 0 3px rgba(46, 58, 140, 0.15);
 }
 
+.file-picker-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
 .jm-input::placeholder {
   color: var(--jm-dark-gray);
 }
