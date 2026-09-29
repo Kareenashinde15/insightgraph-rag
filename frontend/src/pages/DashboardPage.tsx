@@ -50,7 +50,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
   }, []);
 
   return (
-    <div style={{ padding: '32px', maxWidth: '1400px', margin: '0 auto' }}>
+    <div className="page-container dashboard-page" style={{ padding: '32px', maxWidth: '1400px', margin: '0 auto' }}>
       {/* Page Heading - Strictly adhering to Brand Guidelines */}
       <div style={{ marginBottom: '28px' }}>
         <h1 style={{ fontSize: '30px', fontWeight: 700, color: 'var(--text-primary)' }}>Knowledge Overview</h1>
@@ -60,7 +60,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
       </div>
 
       {/* 4 Metric Cards */}
-      <div style={{
+      <div className="dashboard-metrics" style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
         gap: '20px',
@@ -172,14 +172,14 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
       </div>
 
       {/* Two Column Layout: Recent Documents & Recent Questions */}
-      <div style={{
+      <div className="dashboard-secondary" style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(440px, 1fr))',
         gap: '24px',
       }}>
         {/* Recent Documents Table */}
-        <div className="jm-card">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+        <div className="jm-card dashboard-card">
+          <div className="dashboard-card-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
             <h2 style={{ fontSize: '17px', fontWeight: 700 }}>Recent Documents</h2>
             <button
               onClick={() => onNavigateTab('documents')}
@@ -233,8 +233,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
         </div>
 
         {/* Recent Questions Card */}
-        <div className="jm-card">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+        <div className="jm-card dashboard-card">
+          <div className="dashboard-card-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
             <h2 style={{ fontSize: '17px', fontWeight: 700 }}>Recent Questions</h2>
             <button
               onClick={() => onNavigateTab('ask')}

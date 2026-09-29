@@ -339,6 +339,41 @@ p {
     font-size: 24px !important;
   }
 
+  .dashboard-metrics,
+  .dashboard-secondary {
+    grid-template-columns: minmax(0, 1fr) !important;
+    width: 100%;
+  }
+
+  .dashboard-card,
+  .dashboard-metrics > .jm-card {
+    min-width: 0;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .dashboard-card-header {
+    align-items: flex-start !important;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .dashboard-card-header h2 {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .dashboard-card-header .btn-primary,
+  .dashboard-card-header > button {
+    max-width: 100%;
+    white-space: normal;
+    flex-shrink: 1;
+  }
+
+  .dashboard-page .jm-card {
+    padding: 16px;
+  }
+
   .page-container > div:first-child {
     margin-bottom: 18px !important;
   }
