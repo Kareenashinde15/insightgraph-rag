@@ -111,7 +111,6 @@ export const DocumentsPage: React.FC<DocumentsPageProps> = ({ onOpenDocument }) 
           boxShadow: 'var(--card-shadow)',
           cursor: 'pointer',
         }}
-        onClick={() => fileInputRef.current?.click()}
       >
         <div style={{
           width: '56px',
