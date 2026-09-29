@@ -1,9 +1,11 @@
 import { DocumentItem, GraphNode, GraphEdge, ChatMessage, ProcessingJob, SystemMetrics } from '../types';
 
-// Keep local development on the Vite proxy, while allowing Vercel to call the
-// separately deployed FastAPI service in production.
+// Use relative '/api' path so that:
+// - Locally, Vite dev server proxies '/api' to FastAPI.
+// - In production, Vercel rewrites '/api' to Render backend directly from its edge network.
+// This completely eliminates CORS preflight, ISP/DNS blocks, and browser extension interference.
 const configuredApiBase = import.meta.env.VITE_API_BASE_URL?.trim();
-const API_BASE = configuredApiBase
+const API_BASE = (configuredApiBase && !configuredApiBase.includes('onrender.com'))
   ? configuredApiBase.replace(/\/$/, '')
   : '/api';
 

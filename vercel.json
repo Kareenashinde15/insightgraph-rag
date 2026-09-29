@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:match*",
+      "destination": "https://insightgraph-rag-api.onrender.com/api/:match*"
+    }
+  ]
+}
