@@ -217,8 +217,8 @@ export const AskKnowledgePage: React.FC<AskKnowledgePageProps> = ({ onOpenDocume
       </div>
 
       {/* Query Input Box */}
-      <div className="jm-card" style={{ padding: '16px', marginBottom: '32px' }}>
-        <div style={{ display: 'flex', gap: '10px' }}>
+      <div className="jm-card ask-query-card" style={{ padding: '16px', marginBottom: '32px' }}>
+        <div className="ask-query-form" style={{ display: 'flex', gap: '10px' }}>
           <input
             type="text"
             className="jm-input"

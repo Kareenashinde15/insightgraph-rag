@@ -384,6 +384,21 @@ p {
     padding: 16px;
   }
 
+  .ask-query-form {
+    flex-direction: column;
+    gap: 14px !important;
+  }
+
+  .ask-query-form .jm-input,
+  .ask-query-form .btn-primary {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .ask-query-form .btn-primary {
+    margin-top: 2px;
+  }
+
   .page-container > div:first-child {
     margin-bottom: 18px !important;
   }
