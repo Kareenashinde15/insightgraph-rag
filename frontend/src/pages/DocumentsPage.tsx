@@ -113,15 +113,6 @@ export const DocumentsPage: React.FC<DocumentsPageProps> = ({ onOpenDocument }) 
         }}
         onClick={() => fileInputRef.current?.click()}
       >
-        <input
-          ref={fileInputRef}
-          id="knowledge-file-input"
-          className="file-picker-input"
-          type="file"
-          accept=".pdf,.docx,.txt,.md,.html,.csv"
-          onChange={handleFileSelect}
-          aria-label="Choose a knowledge document"
-        />
         <div style={{
           width: '56px',
           height: '56px',
@@ -153,8 +144,7 @@ export const DocumentsPage: React.FC<DocumentsPageProps> = ({ onOpenDocument }) 
         </div>
         <div>
           <label
-            htmlFor="knowledge-file-input"
-            className="btn-primary"
+            className="btn-primary upload-file-label"
             aria-disabled={isUploading}
             onClick={(e) => {
               if (isUploading) e.preventDefault();
@@ -162,6 +152,15 @@ export const DocumentsPage: React.FC<DocumentsPageProps> = ({ onOpenDocument }) 
             }}
           >
             {isUploading ? 'Processing File...' : 'Upload Documents'}
+            <input
+              ref={fileInputRef}
+              className="file-picker-input"
+              type="file"
+              accept=".pdf,.docx,.txt,.md,.html,.csv"
+              onChange={handleFileSelect}
+              aria-label="Choose a knowledge document"
+              disabled={isUploading}
+            />
           </label>
         </div>
         {uploadMessage && (
