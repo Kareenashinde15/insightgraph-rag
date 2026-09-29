@@ -25,7 +25,7 @@ export const Header: React.FC<HeaderProps> = ({
       borderBottom: '1px solid var(--jm-border)',
       display: 'flex',
       alignItems: 'center',
-      justifyContent: 'space-between',
+      justifyContent: 'flex-end',
       padding: '0 28px',
       position: 'sticky',
       top: 0,

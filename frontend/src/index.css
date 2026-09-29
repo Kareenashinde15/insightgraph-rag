@@ -320,6 +320,7 @@ p {
   .app-header {
     height: 60px !important;
     padding: 0 14px !important;
+    justify-content: space-between !important;
   }
 
   .app-header > div:last-child {
