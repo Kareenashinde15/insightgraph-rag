@@ -8,7 +8,7 @@ const configuredApiBase = import.meta.env.VITE_API_BASE_URL?.trim();
 const API_BASE = (configuredApiBase && !configuredApiBase.includes('onrender.com'))
   ? configuredApiBase.replace(/\/$/, '')
   : '/api';
-const UPLOAD_API_BASE = 'https://insightgraph-rag-api.onrender.com/api';
+const DIRECT_API_BASE = 'https://insightgraph-rag-api.onrender.com/api';
 
 export async function fetchMetrics(): Promise<SystemMetrics> {
   const res = await fetch(`${API_BASE}/metrics`);
@@ -36,12 +36,26 @@ export async function fetchDocumentDetails(id: string): Promise<{
 export async function uploadDocument(file: File): Promise<any> {
   const formData = new FormData();
   formData.append('file', file);
-  // Send multipart uploads directly to Render. This avoids Vercel's proxy
-  // request-size/streaming limits on mobile and large PDF uploads.
-  const res = await fetch(`${UPLOAD_API_BASE}/documents/upload`, {
-    method: 'POST',
-    body: formData,
-  });
+  // Keep uploads same-origin so desktop and mobile browsers follow the same
+  // Vercel rewrite path. Fall back only for a network-level proxy failure.
+  let res: Response;
+  try {
+    res = await fetch(`${API_BASE}/documents/upload`, {
+      method: 'POST',
+      body: formData,
+    });
+  } catch (proxyError) {
+    const retryFormData = new FormData();
+    retryFormData.append('file', file);
+    try {
+      res = await fetch(`${DIRECT_API_BASE}/documents/upload`, {
+        method: 'POST',
+        body: retryFormData,
+      });
+    } catch {
+      throw new Error('Upload connection failed. Please check your internet connection and try again.');
+    }
+  }
   if (!res.ok) {
     let detail = 'Failed to upload document';
     try {
