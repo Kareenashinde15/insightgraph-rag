@@ -1,0 +1,248 @@
+:root {
+  --jm-dark-blue: #2E3A8C;
+  --jm-light-blue: #4A5FD9;
+  --jm-navy: #1A2254;
+  --jm-white: #FFFFFF;
+  --jm-light-gray: #F5F7FA;
+  --jm-dark-gray: #4A4A4A;
+  --jm-black: #1A1A1A;
+  --jm-border: #E2E8F0;
+  --jm-border-hover: #CBD5E1;
+
+  /* Entity Palette */
+  --entity-person: #2E3A8C;
+  --entity-company: #4A5FD9;
+  --entity-project: #1A2254;
+  --entity-technology: #4355B9;
+  --entity-location: #64748B;
+  --entity-document: #334155;
+
+  /* App surfaces */
+  --bg-app: #F5F7FA;
+  --bg-surface: #FFFFFF;
+  --bg-surface-secondary: #F8FAFC;
+  --text-primary: #1A1A1A;
+  --text-secondary: #4A4A4A;
+  --text-muted: #64748B;
+  --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="dark"] {
+  --bg-app: #131A42;
+  --bg-surface: #1A2254;
+  --bg-surface-secondary: #161D47;
+  --text-primary: #FFFFFF;
+  --text-secondary: #CBD5E1;
+  --text-muted: #94A3B8;
+  --jm-border: #2D3A7A;
+  --jm-border-hover: #3D4C9E;
+  --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 4px;
+}
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: #2D3A7A;
+}
+
+/* Typography Helpers */
+h1 {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+h2 {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+
+h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+p {
+  font-size: 15px;
+  color: var(--text-secondary);
+}
+
+/* Primary Button */
+.btn-primary {
+  background-color: var(--jm-dark-blue);
+  color: #FFFFFF;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 9px 18px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.18s ease;
+}
+
+.btn-primary:hover {
+  background-color: var(--jm-light-blue);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(74, 95, 217, 0.28);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-primary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Secondary Button */
+.btn-secondary {
+  background-color: transparent;
+  color: var(--jm-dark-blue);
+  border: 1.5px solid var(--jm-dark-blue);
+  font-weight: 600;
+  font-size: 14px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.18s ease;
+}
+
+[data-theme="dark"] .btn-secondary {
+  color: #93C5FD;
+  border-color: #4A5FD9;
+}
+
+.btn-secondary:hover {
+  background-color: rgba(46, 58, 140, 0.06);
+  border-color: var(--jm-light-blue);
+}
+
+/* Card Container */
+.jm-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--jm-border);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: var(--card-shadow);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.jm-card:hover {
+  border-color: var(--jm-border-hover);
+}
+
+/* Input Fields */
+.jm-input {
+  width: 100%;
+  border: 1px solid var(--jm-border);
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.jm-input:focus {
+  border-color: var(--jm-dark-blue);
+  box-shadow: 0 0 0 3px rgba(46, 58, 140, 0.15);
+}
+
+.jm-input::placeholder {
+  color: var(--jm-dark-gray);
+}
+
+/* Entity Badge Styling */
+.badge-person {
+  background-color: rgba(46, 58, 140, 0.12);
+  color: #2E3A8C;
+  border: 1px solid rgba(46, 58, 140, 0.3);
+}
+[data-theme="dark"] .badge-person {
+  background-color: rgba(74, 95, 217, 0.25);
+  color: #BFDBFE;
+  border-color: rgba(74, 95, 217, 0.45);
+}
+
+.badge-company {
+  background-color: rgba(74, 95, 217, 0.12);
+  color: #4A5FD9;
+  border: 1px solid rgba(74, 95, 217, 0.3);
+}
+[data-theme="dark"] .badge-company {
+  background-color: rgba(99, 102, 241, 0.25);
+  color: #C7D2FE;
+  border-color: rgba(99, 102, 241, 0.45);
+}
+
+.badge-project {
+  background-color: rgba(26, 34, 84, 0.1);
+  color: #1A2254;
+  border: 1px solid rgba(26, 34, 84, 0.3);
+}
+[data-theme="dark"] .badge-project {
+  background-color: rgba(147, 197, 253, 0.15);
+  color: #93C5FD;
+  border-color: rgba(147, 197, 253, 0.3);
+}
+
+.badge-technology {
+  background-color: rgba(67, 85, 185, 0.12);
+  color: #3B82F6;
+  border: 1px solid rgba(67, 85, 185, 0.3);
+}
+
+.badge-location {
+  background-color: rgba(100, 116, 139, 0.12);
+  color: #64748B;
+  border: 1px solid rgba(100, 116, 139, 0.3);
+}
+
+/* Animations */
+@keyframes pulseGlow {
+  0% { transform: scale(0.98); opacity: 0.8; }
+  50% { transform: scale(1.02); opacity: 1; }
+  100% { transform: scale(0.98); opacity: 0.8; }
+}
+
+.pulse-glow {
+  animation: pulseGlow 2.5s infinite ease-in-out;
+}

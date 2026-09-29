@@ -1,0 +1,19 @@
+.env
+.env.*
+!.env.example
+
+.venv/
+*.log
+
+**/__pycache__/
+*.py[cod]
+
+frontend/node_modules/
+frontend/dist/
+
+# Uploaded documents are runtime data, not source-controlled fixtures.
+uploads/*
+!uploads/.gitkeep
+
+data/*
+!data/.gitkeep
