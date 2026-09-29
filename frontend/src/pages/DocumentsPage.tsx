@@ -87,7 +87,7 @@ export const DocumentsPage: React.FC<DocumentsPageProps> = ({ onOpenDocument }) 
   };
 
   return (
-    <div style={{ padding: '32px', maxWidth: '1400px', margin: '0 auto' }}>
+    <div className="page-container documents-page" style={{ padding: '32px', maxWidth: '1400px', margin: '0 auto' }}>
       {/* Title */}
       <div style={{ marginBottom: '24px' }}>
         <h1 style={{ fontSize: '28px', fontWeight: 700 }}>Documents</h1>
@@ -98,6 +98,7 @@ export const DocumentsPage: React.FC<DocumentsPageProps> = ({ onOpenDocument }) 
 
       {/* Upload Drag & Drop Box */}
       <div
+        className="doc-upload-card"
         onDragOver={(e) => e.preventDefault()}
         onDrop={handleDrop}
         style={{
@@ -168,7 +169,7 @@ export const DocumentsPage: React.FC<DocumentsPageProps> = ({ onOpenDocument }) 
       </div>
 
       {/* Document Table */}
-      <div className="jm-card" style={{ padding: 0, overflow: 'hidden' }}>
+      <div className="jm-card document-table-card" style={{ padding: 0, overflow: 'hidden' }}>
         <div style={{
           padding: '18px 24px',
           borderBottom: '1px solid var(--jm-border)',
@@ -184,8 +185,14 @@ export const DocumentsPage: React.FC<DocumentsPageProps> = ({ onOpenDocument }) 
           </button>
         </div>
 
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13.5px' }}>
+        {documents.some((doc) => doc.status === 'completed' && doc.entity_count === 0 && doc.relationship_count === 0) && (
+          <div className="document-graph-notice" role="status">
+            Entity and relationship extraction is disabled on this API deployment. Set <code>ENABLE_KNOWLEDGE_GRAPH=true</code> in Render, then reprocess this document.
+          </div>
+        )}
+
+        <div className="responsive-table-wrap" style={{ overflowX: 'auto' }}>
+          <table className="responsive-data-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13.5px' }}>
             <thead>
               <tr style={{ backgroundColor: 'var(--bg-surface-secondary)', borderBottom: '1px solid var(--jm-border)', color: 'var(--text-muted)', fontWeight: 600, fontSize: '12px', textTransform: 'uppercase' }}>
                 <th style={{ padding: '14px 20px' }}>Document</th>
@@ -205,16 +212,16 @@ export const DocumentsPage: React.FC<DocumentsPageProps> = ({ onOpenDocument }) 
                   onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--bg-surface-secondary)')}
                   onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
                 >
-                  <td style={{ padding: '14px 20px', fontWeight: 600 }}>
+                  <td data-label="Document" style={{ padding: '14px 20px', fontWeight: 600 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                       <FileText size={17} color="var(--jm-dark-blue)" />
                       <span>{doc.filename}</span>
                     </div>
                   </td>
-                  <td style={{ padding: '14px 16px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 600, fontSize: '12px' }}>
+                  <td data-label="Format" style={{ padding: '14px 16px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 600, fontSize: '12px' }}>
                     {doc.file_type}
                   </td>
-                  <td style={{ padding: '14px 16px' }}>
+                  <td data-label="Status" style={{ padding: '14px 16px' }}>
                     <span style={{
                       display: 'inline-flex',
                       alignItems: 'center',
@@ -230,10 +237,10 @@ export const DocumentsPage: React.FC<DocumentsPageProps> = ({ onOpenDocument }) 
                       {doc.status}
                     </span>
                   </td>
-                  <td style={{ padding: '14px 16px' }}>{doc.chunk_count}</td>
-                  <td style={{ padding: '14px 16px', fontWeight: 600, color: 'var(--jm-dark-blue)' }}>{doc.entity_count}</td>
-                  <td style={{ padding: '14px 16px', fontWeight: 600, color: 'var(--jm-light-blue)' }}>{doc.relationship_count}</td>
-                  <td style={{ padding: '14px 20px', textAlign: 'right' }}>
+                  <td data-label="Chunks" style={{ padding: '14px 16px' }}>{doc.chunk_count}</td>
+                  <td data-label="Entities" style={{ padding: '14px 16px', fontWeight: 600, color: 'var(--jm-dark-blue)' }}>{doc.entity_count}</td>
+                  <td data-label="Relationships" style={{ padding: '14px 16px', fontWeight: 600, color: 'var(--jm-light-blue)' }}>{doc.relationship_count}</td>
+                  <td data-label="Actions" style={{ padding: '14px 20px', textAlign: 'right' }}>
                     <div style={{ display: 'inline-flex', gap: '8px' }}>
                       <button
                         onClick={() => onOpenDocument(doc.id)}

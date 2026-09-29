@@ -1,39 +1,50 @@
 import React, { useState } from 'react';
-import { Bell, Sun, Moon, CheckCircle2 } from 'lucide-react';
+import { Bell, Sun, Moon, CheckCircle2, Menu } from 'lucide-react';
 
 interface HeaderProps {
   theme: string;
   onToggleTheme: () => void;
   onOpenSettings: () => void;
+  onMenuClick?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   theme,
   onToggleTheme,
   onOpenSettings,
+  onMenuClick,
 }) => {
   const [showNotifications, setShowNotifications] = useState(false);
 
   const notifications: Array<{ id: number; title: string; desc: string; time: string }> = [];
 
   return (
-    <header style={{
+    <header className="app-header" style={{
       height: '68px',
       backgroundColor: 'var(--bg-surface)',
       borderBottom: '1px solid var(--jm-border)',
       display: 'flex',
       alignItems: 'center',
-      justifyContent: 'flex-end',
+      justifyContent: 'space-between',
       padding: '0 28px',
       position: 'sticky',
       top: 0,
       zIndex: 30,
       boxShadow: '0 1px 3px rgba(0, 0, 0, 0.03)',
     }}>
+      <button
+        className="mobile-menu-button"
+        onClick={onMenuClick}
+        aria-label="Open navigation menu"
+        title="Open navigation menu"
+      >
+        <Menu size={20} />
+      </button>
+
       {/* Right Action Icons & Status */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
         {/* System Status Indicator */}
-        <div style={{
+        <div className="header-status" style={{
           display: 'flex',
           alignItems: 'center',
           gap: '8px',
@@ -174,7 +185,7 @@ export const Header: React.FC<HeaderProps> = ({
           }}>
             IG
           </div>
-          <span style={{ fontSize: '13.5px', fontWeight: 600, paddingRight: '6px' }}>InsightGraph RAG Admin</span>
+          <span className="header-profile-name" style={{ fontSize: '13.5px', fontWeight: 600, paddingRight: '6px' }}>InsightGraph RAG Admin</span>
         </div>
       </div>
     </header>

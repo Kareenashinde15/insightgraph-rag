@@ -12,9 +12,11 @@ import {
 interface SidebarProps {
   currentTab: string;
   onSelectTab: (tab: string) => void;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab, isOpen = false, onClose }) => {
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'documents', label: 'Documents', icon: FileText },
@@ -25,7 +27,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab }) => 
   ];
 
   return (
-    <aside style={{
+    <>
+      {isOpen && <div className="app-sidebar-backdrop" onClick={onClose} aria-hidden="true" />}
+      <aside className={`app-sidebar${isOpen ? ' is-open' : ''}`} style={{
       width: '260px',
       backgroundColor: 'var(--jm-navy)',
       color: '#FFFFFF',
@@ -101,7 +105,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab }) => 
             return (
               <button
                 key={item.id}
-                onClick={() => onSelectTab(item.id)}
+                onClick={() => {
+                  onSelectTab(item.id);
+                  onClose?.();
+                }}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -149,6 +156,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab }) => 
           <div style={{ fontSize: '11px', color: '#94A3B8' }}>InsightGraph RAG v1.0.0</div>
         </div>
       </div>
-    </aside>
+      </aside>
+    </>
   );
 };

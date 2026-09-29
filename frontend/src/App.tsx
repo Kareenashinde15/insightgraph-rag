@@ -16,6 +16,7 @@ import { fetchDocumentDetails } from './services/api';
 export const App: React.FC = () => {
   const [currentTab, setCurrentTab] = useState('dashboard');
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Selected Document state for modal
   const [selectedDocument, setSelectedDocument] = useState<DocumentItem | null>(null);
@@ -45,22 +46,28 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div style={{ display: 'flex', width: '100vw', minHeight: '100vh', backgroundColor: 'var(--bg-app)' }}>
+    <div className="app-shell" style={{ display: 'flex', width: '100vw', minHeight: '100vh', backgroundColor: 'var(--bg-app)' }}>
       {/* Sidebar Navigation */}
       <Sidebar
         currentTab={currentTab}
-        onSelectTab={(tab) => setCurrentTab(tab)}
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        onSelectTab={(tab) => {
+          setCurrentTab(tab);
+          setIsSidebarOpen(false);
+        }}
       />
 
       {/* Main Content Area */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflowX: 'hidden' }}>
+      <div className="app-main-shell" style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflowX: 'hidden' }}>
         <Header
           theme={theme}
           onToggleTheme={toggleTheme}
           onOpenSettings={() => setCurrentTab('settings')}
+          onMenuClick={() => setIsSidebarOpen(true)}
         />
 
-        <main style={{ flex: 1, overflowY: 'auto' }}>
+        <main className="app-main" style={{ flex: 1, overflowY: 'auto' }}>
           {currentTab === 'dashboard' && (
             <DashboardPage
               onNavigateTab={(tab) => setCurrentTab(tab)}

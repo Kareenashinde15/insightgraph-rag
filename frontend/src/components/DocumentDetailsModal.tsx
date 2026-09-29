@@ -23,6 +23,7 @@ export const DocumentDetailsModal: React.FC<DocumentDetailsModalProps> = ({
 
   if (!document) return null;
 
+  const hasKnowledgeGraphData = document.entity_count > 0 || document.relationship_count > 0;
   const pipelineStages = [
     'Upload',
     'Validate File',
@@ -30,12 +31,12 @@ export const DocumentDetailsModal: React.FC<DocumentDetailsModalProps> = ({
     'Extract Text',
     'Chunk Document',
     'Generate Embeddings',
-    'Optional Knowledge Graph Skipped',
+    hasKnowledgeGraphData ? 'Extract Knowledge Graph' : 'Optional Knowledge Graph Skipped',
     'Store Provenance & Mark Complete',
   ];
 
   return (
-    <div style={{
+    <div className="document-modal-backdrop" style={{
       position: 'fixed',
       inset: 0,
       backgroundColor: 'rgba(15, 23, 42, 0.65)',
@@ -46,7 +47,7 @@ export const DocumentDetailsModal: React.FC<DocumentDetailsModalProps> = ({
       zIndex: 60,
       padding: '24px',
     }}>
-      <div style={{
+      <div className="document-modal" style={{
         backgroundColor: 'var(--bg-surface)',
         borderRadius: '14px',
         width: '900px',
@@ -59,7 +60,7 @@ export const DocumentDetailsModal: React.FC<DocumentDetailsModalProps> = ({
         overflow: 'hidden',
       }}>
         {/* Header */}
-        <div style={{
+        <div className="document-modal-header" style={{
           padding: '20px 24px',
           borderBottom: '1px solid var(--jm-border)',
           display: 'flex',
@@ -95,7 +96,7 @@ export const DocumentDetailsModal: React.FC<DocumentDetailsModalProps> = ({
         </div>
 
         {/* Tab Selector */}
-        <div style={{
+        <div className="document-modal-tabs" style={{
           display: 'flex',
           borderBottom: '1px solid var(--jm-border)',
           padding: '0 24px',
@@ -128,7 +129,7 @@ export const DocumentDetailsModal: React.FC<DocumentDetailsModalProps> = ({
         </div>
 
         {/* Modal Content */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '24px' }}>
+        <div className="document-modal-body" style={{ flex: 1, overflowY: 'auto', padding: '24px' }}>
           {/* Tab 1: Extracted Text */}
           {activeTab === 'text' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -200,6 +201,11 @@ export const DocumentDetailsModal: React.FC<DocumentDetailsModalProps> = ({
           {/* Tab 2: Extracted Entities */}
           {activeTab === 'entities' && (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '12px' }}>
+              {entities.length === 0 && (
+                <div className="graph-empty-state">
+                  No entities were extracted. This deployment has optional knowledge-graph extraction disabled; enable <code>ENABLE_KNOWLEDGE_GRAPH=true</code> in Render and reprocess the document.
+                </div>
+              )}
               {entities.map((ent) => (
                 <div key={ent.id} style={{
                   padding: '14px',
@@ -232,6 +238,11 @@ export const DocumentDetailsModal: React.FC<DocumentDetailsModalProps> = ({
           {/* Tab 3: Extracted Relationships */}
           {activeTab === 'relationships' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {relationships.length === 0 && (
+                <div className="graph-empty-state">
+                  No relationships were extracted. Enable knowledge-graph extraction in Render and reprocess the document after changing the setting.
+                </div>
+              )}
               {relationships.map((rel) => (
                 <div key={rel.id} style={{
                   padding: '12px 16px',
