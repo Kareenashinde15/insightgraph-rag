@@ -179,7 +179,12 @@ class KnowledgeService:
             return Path(str(original)).name
         public_id = str(resource.get("public_id", "")).rsplit("/", 1)[-1]
         stem = public_id.split("_", 1)[-1] or "recovered-document"
-        file_format = str(resource.get("format", "bin")).lower()
+        # Older raw Cloudinary uploads did not preserve the extension in the
+        # public ID or resource metadata. All legacy assets in this project
+        # were PDFs; new uploads carry the exact original filename in context.
+        file_format = str(resource.get("format") or "pdf").lower()
+        if file_format in {"", "bin", "raw"}:
+            file_format = "pdf"
         return f"{stem}.{file_format}"
 
     @staticmethod
