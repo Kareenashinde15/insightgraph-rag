@@ -115,11 +115,10 @@ export async function hybridSearch(query: string): Promise<any> {
 }
 
 export async function sendChatMessage(query: string, sessionId: string = 'session_default'): Promise<ChatMessage> {
-  // Chat is the long-running route. Call Render directly so a Vercel
-  // serverless proxy timeout cannot turn a valid grounded response into 502.
-  const chatUrl = import.meta.env.PROD
-    ? 'https://insightgraph-rag-api.onrender.com/api/chat'
-    : `${API_BASE}/chat`;
+  // Keep browser requests same-origin. The Vercel function forwards this
+  // route to Render, avoiding browser CORS and preserving the chat proxy's
+  // controlled timeout/fallback behavior.
+  const chatUrl = `${API_BASE}/chat`;
   const res = await fetch(chatUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
