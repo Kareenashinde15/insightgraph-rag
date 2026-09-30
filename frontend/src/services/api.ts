@@ -115,12 +115,26 @@ export async function hybridSearch(query: string): Promise<any> {
 }
 
 export async function sendChatMessage(query: string, sessionId: string = 'session_default'): Promise<ChatMessage> {
-  const res = await fetch(`${API_BASE}/chat`, {
+  // Chat is the long-running route. Call Render directly so a Vercel
+  // serverless proxy timeout cannot turn a valid grounded response into 502.
+  const chatUrl = import.meta.env.PROD
+    ? 'https://insightgraph-rag-api.onrender.com/api/chat'
+    : `${API_BASE}/chat`;
+  const res = await fetch(chatUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ query, session_id: sessionId }),
   });
-  if (!res.ok) throw new Error('Chat failed');
+  if (!res.ok) {
+    let detail = `Chat failed (${res.status})`;
+    try {
+      const payload = await res.json();
+      detail = payload.detail || detail;
+    } catch {
+      // Keep the status-based message when the API returns no JSON body.
+    }
+    throw new Error(detail);
+  }
   return res.json();
 }
 
