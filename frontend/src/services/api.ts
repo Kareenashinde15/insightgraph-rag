@@ -118,7 +118,9 @@ export async function sendChatMessage(query: string, sessionId: string = 'sessio
   // Keep browser requests same-origin. The Vercel function forwards this
   // route to Render, avoiding browser CORS and preserving the chat proxy's
   // controlled timeout/fallback behavior.
-  const chatUrl = `${API_BASE}/chat`;
+  const chatUrl = import.meta.env.PROD
+    ? `${API_BASE}/ask`
+    : `${API_BASE}/chat`;
   const res = await fetch(chatUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
