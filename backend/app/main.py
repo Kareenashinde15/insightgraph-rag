@@ -60,7 +60,8 @@ cors_origins = list(set(default_origins + raw_origins))
 if "*" in raw_origins:
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],
+        allow_origins=["https://insightsrag.vercel.app", "https://insightgraph.vercel.app"
+        ],
         allow_credentials=False,
         allow_methods=["*"],
         allow_headers=["*"],
