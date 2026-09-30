@@ -142,25 +142,15 @@ export const DocumentsPage: React.FC<DocumentsPageProps> = ({ onOpenDocument }) 
           PDF · DOCX · TXT · MD · HTML · CSV
         </div>
         <div>
-          <label
-            className="btn-primary upload-file-label"
-            aria-disabled={isUploading}
-            onClick={(e) => {
-              if (isUploading) e.preventDefault();
-              e.stopPropagation();
-            }}
-          >
-            {isUploading ? 'Processing File...' : 'Upload Documents'}
-            <input
-              ref={fileInputRef}
-              className="file-picker-input"
-              type="file"
-              accept=".pdf,.docx,.txt,.md,.html,.csv"
-              onChange={handleFileSelect}
-              aria-label="Choose a knowledge document"
-              disabled={isUploading}
-            />
-          </label>
+          <input
+            ref={fileInputRef}
+            className="native-file-picker"
+            type="file"
+            accept=".pdf,.docx,.txt,.md,.html,.csv"
+            onChange={handleFileSelect}
+            aria-label="Choose a knowledge document"
+            disabled={isUploading}
+          />
         </div>
         {uploadMessage && (
           <div style={{ marginTop: '14px', fontSize: '13px', fontWeight: 600, color: 'var(--jm-dark-blue)' }}>
