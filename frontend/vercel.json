@@ -4,10 +4,6 @@
   "outputDirectory": "dist",
   "rewrites": [
     {
-      "source": "/api/ask",
-      "destination": "https://insightgraph-rag-api.onrender.com/api/chat"
-    },
-    {
       "source": "/api/:match*",
       "destination": "https://insightgraph-rag-api.onrender.com/api/:match*"
     }
