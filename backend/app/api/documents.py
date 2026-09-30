@@ -149,7 +149,11 @@ async def upload_document(
             content, doc_id, safe_name
         )
     except Exception as exc:
-        raise HTTPException(status_code=502, detail=f"Cloudinary upload failed: {exc}") from exc
+        print(f"Cloudinary upload failed for {safe_name}: {type(exc).__name__}: {exc}")
+        raise HTTPException(
+            status_code=502,
+            detail="Cloudinary upload failed. Check the server Cloudinary configuration.",
+        ) from exc
 
     with open(file_path, "wb") as buffer:
         buffer.write(content)
