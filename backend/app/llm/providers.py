@@ -89,7 +89,7 @@ class GroqProvider(BaseLLMProvider):
                 # Vercel's chat proxy has a short request window. Return the
                 # grounded evidence fallback before that window expires when
                 # Groq is slow or temporarily unavailable.
-                timeout=(3, 4),
+                timeout=(1, 2),
             )
             response.raise_for_status()
             data = response.json()
