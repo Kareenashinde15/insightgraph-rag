@@ -40,6 +40,7 @@ def upload_original_to_cloudinary(content: bytes, document_id: str, filename: st
         resource_type="raw",
         folder="insightgraph/documents",
         public_id=f"{document_id}_{Path(filename).stem}",
+        context={"original_filename": filename},
         use_filename=False,
         unique_filename=True,
     )

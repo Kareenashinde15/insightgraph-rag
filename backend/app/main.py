@@ -1,4 +1,5 @@
 import os
+import asyncio
 from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 load_dotenv()
@@ -15,8 +16,13 @@ from backend.app.services.knowledge_service import KnowledgeService
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    # Warm up the service without loading any implicit data.
+    # Warm up the service and recover originals that survived in Cloudinary
+    # after an ephemeral Render instance was recreated.
     ks = KnowledgeService()
+    if os.getenv("CLOUDINARY_RECOVERY_ENABLED", "true").lower() == "true":
+        recovery = await asyncio.to_thread(ks.recover_cloudinary_documents)
+        if recovery["recovered"] or recovery["failed"]:
+            print(f"Cloudinary recovery: {recovery}")
     print(f"Knowledge Base Online: {len(ks.documents)} documents, {len(ks.graph_engine.nodes)} entities, {len(ks.graph_engine.edges)} relationships.")
     yield
 
