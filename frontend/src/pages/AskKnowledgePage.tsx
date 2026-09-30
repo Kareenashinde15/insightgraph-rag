@@ -388,7 +388,7 @@ export const AskKnowledgePage: React.FC<AskKnowledgePageProps> = ({ onOpenDocume
                   <div style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '10px' }}>
                     Supporting source evidence ({msg.citations.length})
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '10px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: '10px' }}>
                     {msg.citations.map((c) => (
                       <div
                         key={c.id}
@@ -404,13 +404,13 @@ export const AskKnowledgePage: React.FC<AskKnowledgePageProps> = ({ onOpenDocume
                         onMouseEnter={(e) => (e.currentTarget.style.borderColor = 'var(--jm-dark-blue)')}
                         onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'var(--jm-border)')}
                       >
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-                          <span style={{ fontSize: '12.5px', fontWeight: 700, color: 'var(--jm-dark-blue)' }}>
+                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '10px', marginBottom: '6px', minWidth: 0 }}>
+                          <span title={c.document_name} style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: '12.5px', fontWeight: 700, color: 'var(--jm-dark-blue)' }}>
                             [{c.citation_index}] {c.document_name}
                           </span>
-                          <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Page {c.page}</span>
+                          <span style={{ flexShrink: 0, whiteSpace: 'nowrap', fontSize: '11px', color: 'var(--text-muted)' }}>Page {c.page}</span>
                         </div>
-                        <p style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                        <p style={{ margin: 0, overflowWrap: 'anywhere', wordBreak: 'break-word', fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
                           "{c.snippet}"
                         </p>
                       </div>
