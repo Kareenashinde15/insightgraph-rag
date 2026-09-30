@@ -86,9 +86,10 @@ class GroqProvider(BaseLLMProvider):
                     "Content-Type": "application/json",
                 },
                 json=payload,
-                # Keep the API response inside Render/Vercel gateway limits.
-                # The provider returns a controlled fallback on timeout.
-                timeout=(5, 60),
+                # Vercel's chat proxy has a short request window. Return the
+                # grounded evidence fallback before that window expires when
+                # Groq is slow or temporarily unavailable.
+                timeout=(5, 8),
             )
             response.raise_for_status()
             data = response.json()
