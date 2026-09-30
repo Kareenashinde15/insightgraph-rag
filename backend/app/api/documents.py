@@ -46,6 +46,35 @@ def upload_original_to_cloudinary(content: bytes, document_id: str, filename: st
     )
     return result.get("public_id"), result.get("secure_url")
 
+
+def delete_original_from_cloudinary(public_id: Optional[str]) -> None:
+    """Delete the remote original so startup recovery cannot resurrect it."""
+    if not public_id:
+        return
+    cloud_name = os.getenv("CLOUDINARY_CLOUD_NAME")
+    api_key = os.getenv("CLOUDINARY_API_KEY")
+    api_secret = os.getenv("CLOUDINARY_API_SECRET")
+    if not all((cloud_name, api_key, api_secret)):
+        raise RuntimeError("Cloudinary is not configured")
+
+    import cloudinary  # pyright: ignore[reportMissingImports]
+    import cloudinary.uploader  # pyright: ignore[reportMissingImports]
+
+    cloudinary.config(
+        cloud_name=cloud_name,
+        api_key=api_key,
+        api_secret=api_secret,
+        secure=True,
+    )
+    result = cloudinary.uploader.destroy(
+        public_id,
+        resource_type="raw",
+        type="upload",
+        invalidate=True,
+    )
+    if result.get("result") not in {"ok", "not found"}:
+        raise RuntimeError(f"Cloudinary returned {result.get('result', 'unknown result')}")
+
 @router.get("", response_model=List[DocumentModel])
 def list_documents():
     ks = KnowledgeService()
@@ -92,7 +121,17 @@ def delete_document(doc_id: str):
     if doc_id not in ks.documents:
         raise HTTPException(status_code=404, detail="Document not found")
 
-    storage_path = ks.documents[doc_id].storage_path
+    document = ks.documents[doc_id]
+    storage_path = document.storage_path
+
+    try:
+        delete_original_from_cloudinary(document.cloudinary_public_id)
+    except Exception as exc:
+        print(f"Cloudinary delete failed for {document.filename}: {type(exc).__name__}: {exc}")
+        raise HTTPException(
+            status_code=502,
+            detail="The document could not be permanently deleted from Cloudinary.",
+        ) from exc
 
     # Remove document records and all derived graph/vector state.
     del ks.documents[doc_id]
