@@ -75,9 +75,11 @@ class DocumentProcessingPipeline:
             parsed_doc = ParserFactory.parse_file(file_path, document.filename)
             document.raw_text = parsed_doc.raw_text
             if not parsed_doc.raw_text.strip():
+                parse_errors = parsed_doc.metadata.get("parse_errors", [])
+                details = f" OCR details: {'; '.join(parse_errors[:3])}" if parse_errors else ""
                 raise ValueError(
-                    "No extractable text was found. This file may be image-only; "
-                    "OCR is not enabled in the local hobby configuration."
+                    "No extractable text was found after selectable-text extraction and OCR."
+                    + details
                 )
 
             # 4. Normalize Text

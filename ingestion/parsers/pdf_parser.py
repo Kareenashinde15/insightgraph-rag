@@ -1,6 +1,8 @@
 from typing import List
 from ingestion.parsers.base import BaseParser, ParsedDocument, ParsedChunkDraft
 
+_OCR_ENGINE = None
+
 
 def _ocr_page(page) -> str:
     """OCR a rendered PDF page when it contains no selectable text."""
@@ -17,7 +19,12 @@ def _ocr_page(page) -> str:
     pixmap = page.get_pixmap(matrix=fitz.Matrix(2, 2), alpha=False)
     image = np.frombuffer(pixmap.samples, dtype=np.uint8)
     image = image.reshape(pixmap.height, pixmap.width, pixmap.n)
-    result, _ = RapidOCR()(image)
+    # PyMuPDF returns RGB pixels while OCR runtimes conventionally expect BGR.
+    image = np.ascontiguousarray(image[:, :, :3][:, :, ::-1])
+    global _OCR_ENGINE
+    if _OCR_ENGINE is None:
+        _OCR_ENGINE = RapidOCR()
+    result, _ = _OCR_ENGINE(image)
     if not result:
         return ""
     return "\n".join(str(item[1]).strip() for item in result if len(item) > 1 and str(item[1]).strip())
