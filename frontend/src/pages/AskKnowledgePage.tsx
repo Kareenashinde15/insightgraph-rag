@@ -221,6 +221,8 @@ export const AskKnowledgePage: React.FC<AskKnowledgePageProps> = ({ onOpenDocume
         <div className="ask-query-form" style={{ display: 'flex', gap: '10px' }}>
           <input
             type="text"
+            id="knowledge-query"
+            name="query"
             className="jm-input"
             placeholder="Ask a question about your uploaded documents..."
             value={query}
