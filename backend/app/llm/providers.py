@@ -29,6 +29,20 @@ class GroqProvider(BaseLLMProvider):
             })
         return citations
 
+    @staticmethod
+    def _evidence_fallback(retrieval_result: Any) -> str:
+        chunks = list(getattr(retrieval_result, "vector_chunks", []) or [])
+        if not chunks:
+            return "I could not generate an answer because no document evidence was retrieved."
+        passages = []
+        for idx, chunk in enumerate(chunks[:3], 1):
+            source = chunk.source or chunk.document_id
+            passages.append(f"[{idx}] {source}, page {chunk.page}:\n{chunk.text}")
+        return (
+            "The language model is temporarily unavailable. The following grounded "
+            "passages were retrieved for your question:\n\n" + "\n\n".join(passages)
+        )
+
     def generate_answer(
         self,
         query: str,
@@ -89,13 +103,25 @@ class GroqProvider(BaseLLMProvider):
                 model=data.get("model", self.model),
                 grounded=bool(citations or getattr(retrieval_result, "graph_facts", [])),
             )
-        except requests.RequestException as exc:
+        except requests.HTTPError as exc:
+            status = exc.response.status_code if exc.response is not None else "unknown"
+            print(f"Groq HTTP error: status={status}, model={self.model}")
             return LLMAnswerResponse(
-                answer=f"Groq request failed: {exc.__class__.__name__}. Check the API key, model, network, or rate limits.",
+                answer=self._evidence_fallback(retrieval_result),
                 citations=citations,
                 tokens_used=0,
                 model=self.model,
-                grounded=False,
+                grounded=bool(citations),
+                uncertainty_noted=True,
+            )
+        except requests.RequestException as exc:
+            print(f"Groq request error: {type(exc).__name__}, model={self.model}")
+            return LLMAnswerResponse(
+                answer=self._evidence_fallback(retrieval_result),
+                citations=citations,
+                tokens_used=0,
+                model=self.model,
+                grounded=bool(citations),
                 uncertainty_noted=True,
             )
         except (KeyError, IndexError, TypeError, ValueError):
