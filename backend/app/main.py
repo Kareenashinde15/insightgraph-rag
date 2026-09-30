@@ -58,7 +58,7 @@ default_origins = [
 cors_origins = list(set(default_origins + raw_origins))
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://insightsrag.vercel.app"],
+    allow_origins=["https://insightsrag.vercel.app","https://insightgraph-rag-api.onrender.com/api/chat"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
