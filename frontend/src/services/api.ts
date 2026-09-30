@@ -1,12 +1,14 @@
 import { DocumentItem, GraphNode, GraphEdge, ChatMessage, ProcessingJob, SystemMetrics } from '../types';
 
-// Use the local proxy during development. In production, call Render
-// directly so POST requests do not depend on Vercel's rewrite gateway.
+// Always use the same-origin /api path so every environment (dev and
+// production) routes requests through the configured proxy (Vite in dev,
+// Vercel rewrites in production).  This avoids cross-origin requests to
+// Render and the CORS errors they cause.
 const configuredApiBase = import.meta.env.VITE_API_BASE_URL?.trim();
 const DIRECT_API_BASE = 'https://insightgraph-rag-api.onrender.com/api';
 const API_BASE = configuredApiBase
   ? configuredApiBase.replace(/\/$/, '')
-  : (import.meta.env.DEV ? '/api' : DIRECT_API_BASE);
+  : '/api';
 
 export async function fetchMetrics(): Promise<SystemMetrics> {
   const res = await fetch(`${API_BASE}/metrics`);
