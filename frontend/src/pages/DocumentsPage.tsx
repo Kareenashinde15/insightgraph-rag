@@ -142,15 +142,20 @@ export const DocumentsPage: React.FC<DocumentsPageProps> = ({ onOpenDocument }) 
           PDF · DOCX · TXT · MD · HTML · CSV
         </div>
         <div>
-          <input
-            ref={fileInputRef}
-            className="native-file-picker"
-            type="file"
-            accept=".pdf,.docx,.txt,.md,.html,.csv"
-            onChange={handleFileSelect}
-            aria-label="Choose a knowledge document"
-            disabled={isUploading}
-          />
+          <div className="upload-control">
+            <span className="upload-control-text">
+              {isUploading ? 'Processing File...' : 'Upload Documents'}
+            </span>
+            <input
+              ref={fileInputRef}
+              className="native-file-picker"
+              type="file"
+              accept=".pdf,.docx,.txt,.md,.html,.csv"
+              onChange={handleFileSelect}
+              aria-label="Choose a knowledge document"
+              disabled={isUploading}
+            />
+          </div>
         </div>
         {uploadMessage && (
           <div style={{ marginTop: '14px', fontSize: '13px', fontWeight: 600, color: 'var(--jm-dark-blue)' }}>
