@@ -1,12 +1,9 @@
 import { DocumentItem, GraphNode, GraphEdge, ChatMessage, ProcessingJob, SystemMetrics } from '../types';
 
-// Always use the same-origin /api path so every environment (dev and
-// production) routes requests through the configured proxy (Vite in dev,
-// Vercel rewrites in production).  This avoids cross-origin requests to
-// Render and the CORS errors they cause.
+// Keep browser requests same-origin in production. Vercel proxies /api to
+// Render server-to-server, so the browser never needs cross-origin CORS.
 const configuredApiBase = import.meta.env.VITE_API_BASE_URL?.trim();
-const DIRECT_API_BASE = 'https://insightgraph-rag-api.onrender.com/api';
-const API_BASE = configuredApiBase
+const API_BASE = import.meta.env.DEV && configuredApiBase
   ? configuredApiBase.replace(/\/$/, '')
   : '/api';
 
@@ -36,26 +33,10 @@ export async function fetchDocumentDetails(id: string): Promise<{
 export async function uploadDocument(file: File): Promise<any> {
   const formData = new FormData();
   formData.append('file', file);
-  // Keep uploads same-origin so desktop and mobile browsers follow the same
-  // Vercel rewrite path. Fall back only for a network-level proxy failure.
-  let res: Response;
-  try {
-    res = await fetch(`${API_BASE}/documents/upload`, {
-      method: 'POST',
-      body: formData,
-    });
-  } catch (proxyError) {
-    const retryFormData = new FormData();
-    retryFormData.append('file', file);
-    try {
-      res = await fetch(`${DIRECT_API_BASE}/documents/upload`, {
-        method: 'POST',
-        body: retryFormData,
-      });
-    } catch {
-      throw new Error('Upload connection failed. Please check your internet connection and try again.');
-    }
-  }
+  const res = await fetch(`${API_BASE}/documents/upload`, {
+    method: 'POST',
+    body: formData,
+  });
   if (!res.ok) {
     let detail = 'Failed to upload document';
     try {
