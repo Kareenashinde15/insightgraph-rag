@@ -19,7 +19,7 @@ def test_chunking():
     ]
     chunks = chunker.chunk_document("doc_test", drafts)
     assert len(chunks) >= 1
-    assert chunks[0].page == 1
+    assert chunks[0].page_number == 1
     assert "Microsoft" in chunks[0].text
     print("test_chunking passed!")
 

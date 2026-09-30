@@ -38,7 +38,7 @@ class HybridEntityExtractor:
         self.nlp = None
         if spacy_model:
             try:
-                import spacy
+                import spacy  # pyright: ignore[reportMissingImports]
                 self.nlp = spacy.load(spacy_model)
             except Exception:
                 self.nlp = None

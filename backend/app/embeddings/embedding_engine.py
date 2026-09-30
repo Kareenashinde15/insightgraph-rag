@@ -2,7 +2,7 @@ import hashlib
 import math
 import os
 import time
-from typing import List, Optional
+from typing import Any, List, Optional
 
 class EmbeddingEngine:
     """Local embedding adapter with a deterministic fallback.
@@ -56,7 +56,7 @@ class EmbeddingEngine:
                 # encode_query/document are preferred for asymmetric search
                 # models, while the compatibility fallback works for older
                 # Sentence Transformers releases and MiniLM.
-                encode_method = getattr(
+                encode_method: Any = getattr(
                     model,
                     "encode_query" if query else "encode_document",
                     None,

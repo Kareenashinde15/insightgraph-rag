@@ -55,13 +55,15 @@ class ConflictDetector:
                 differing_dates = True
 
             if differing_dates:
+                source_entity = str(claims[0].get("source_entity") or "")
+                target_entity = str(claims[0].get("target_entity") or "")
                 conflicts.append(
                     FactConflict(
                         id=f"conflict_{src}_{rtype}_{tgt}",
-                        entity_name=claims[0].get("source_entity"),
+                        entity_name=source_entity,
                         relationship_type=rtype,
-                        target_entity=claims[0].get("target_entity"),
-                        description=f"Potential conflicting information detected: divergent dates reported across {len(docs_seen)} documents for {claims[0].get('source_entity')} -> {rtype} -> {claims[0].get('target_entity')}.",
+                        target_entity=target_entity,
+                        description=f"Potential conflicting information detected: divergent dates reported across {len(docs_seen)} documents for {source_entity} -> {rtype} -> {target_entity}.",
                         claims=[
                             {
                                 "source_document": c.get("source_document"),

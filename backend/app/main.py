@@ -1,4 +1,5 @@
 import os
+from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -12,10 +13,19 @@ from backend.app.api.chat import router as chat_router
 from backend.app.api.system import router as system_router
 from backend.app.services.knowledge_service import KnowledgeService
 
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    # Warm up the service without loading any implicit data.
+    ks = KnowledgeService()
+    print(f"Knowledge Base Online: {len(ks.documents)} documents, {len(ks.graph_engine.nodes)} entities, {len(ks.graph_engine.edges)} relationships.")
+    yield
+
+
 app = FastAPI(
     title="InsightGraph RAG — Local Document Intelligence Platform",
     description="Local personal knowledge graph and RAG hobby application",
-    version="1.0.0"
+    version="1.0.0",
+    lifespan=lifespan,
 )
 
 raw_origins = [origin.strip() for origin in os.getenv("CORS_ORIGINS", "").split(",") if origin.strip()]
@@ -54,12 +64,6 @@ app.include_router(graph_router)
 app.include_router(search_router)
 app.include_router(chat_router)
 app.include_router(system_router)
-
-@app.on_event("startup")
-def startup_event():
-    # Warm up the service without loading any implicit data.
-    ks = KnowledgeService()
-    print(f"Knowledge Base Online: {len(ks.documents)} documents, {len(ks.graph_engine.nodes)} entities, {len(ks.graph_engine.edges)} relationships.")
 
 @app.get("/")
 def root():

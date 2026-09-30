@@ -2,7 +2,7 @@ import os
 import time
 from datetime import datetime
 from typing import Dict, List, Optional, Any
-from backend.app.models.schema import DocumentModel, DocumentChunkModel, GraphNodeModel, GraphEdgeModel, ProcessingJobModel, ChatMessageModel, ChatSessionModel
+from backend.app.models.schema import DocumentModel, DocumentChunkModel, GraphNodeModel, GraphEdgeModel, ProcessingJobModel, ChatMessageModel, ChatSessionModel, CitationModel
 from backend.app.graph.graph_engine import GraphEngine
 from backend.app.retrieval.vector_store import VectorStore, VectorRecord
 from backend.app.retrieval.hybrid_retriever import HybridRetriever
@@ -212,16 +212,16 @@ class KnowledgeService:
         msg_id = f"msg_{uuid.uuid4().hex[:8]}"
 
         citations_models = [
-            {
-                "id": f"cit_{c.get('citation_index', idx)}",
-                "citation_index": c.get("citation_index", idx),
-                "document_id": c.get("document_id", ""),
-                "document_name": c.get("document_name", ""),
-                "page": c.get("page", 1),
-                "chunk_id": c.get("chunk_id", ""),
-                "snippet": c.get("snippet", ""),
-                "similarity_score": c.get("similarity_score"),
-            }
+            CitationModel(
+                id=f"cit_{c.get('citation_index', idx)}",
+                citation_index=c.get("citation_index", idx),
+                document_id=c.get("document_id", ""),
+                document_name=c.get("document_name", ""),
+                page=c.get("page", 1),
+                chunk_id=c.get("chunk_id", ""),
+                snippet=c.get("snippet", ""),
+                similarity_score=c.get("similarity_score"),
+            )
             for idx, c in enumerate(validated_citations, 1)
         ]
 
