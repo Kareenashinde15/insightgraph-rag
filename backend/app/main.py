@@ -52,10 +52,10 @@ default_origins = [
     "http://localhost:5173",
     "http://127.0.0.1:3000",
     "http://127.0.0.1:5173",
-    "https://insightstrag.vercel.app",
+    "https://insightsrag.vercel.app",
     "https://insightgraph.vercel.app",
 ]
-cors_origins = list(set(default_origins + raw_origins +["https://insightstrag.vercel.app"]))
+cors_origins = list(set(default_origins + raw_origins +["https://insightsrag.vercel.app"]))
 app.add_middleware(
     CORSMiddleware,
     allow_origins= cors_origins,
