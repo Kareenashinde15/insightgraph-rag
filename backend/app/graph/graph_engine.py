@@ -119,16 +119,22 @@ class GraphEngine:
 
             # Outgoing edges
             for eid in self.out_edges.get(curr_id, []):
+                edge = self.edges.get(eid)
+                if edge is None:
+                    continue
                 visited_edges.add(eid)
-                target_id = self.edges[eid].target
+                target_id = edge.target
                 if target_id not in visited_nodes:
                     visited_nodes.add(target_id)
                     queue.append((target_id, curr_depth + 1))
 
             # Incoming edges
             for eid in self.in_edges.get(curr_id, []):
+                edge = self.edges.get(eid)
+                if edge is None:
+                    continue
                 visited_edges.add(eid)
-                source_id = self.edges[eid].source
+                source_id = edge.source
                 if source_id not in visited_nodes:
                     visited_nodes.add(source_id)
                     queue.append((source_id, curr_depth + 1))
@@ -176,7 +182,9 @@ class GraphEngine:
 
             # Traverse out edges
             for eid in self.out_edges.get(curr_id, []):
-                edge = self.edges[eid]
+                edge = self.edges.get(eid)
+                if edge is None:
+                    continue
                 if relationship_filter and edge.relationship_type.upper() not in [r.upper() for r in relationship_filter]:
                     continue
                 next_id = edge.target
@@ -198,7 +206,9 @@ class GraphEngine:
 
             # Traverse in edges (bidirectional traversal for semantic discovery)
             for eid in self.in_edges.get(curr_id, []):
-                edge = self.edges[eid]
+                edge = self.edges.get(eid)
+                if edge is None:
+                    continue
                 if relationship_filter and edge.relationship_type.upper() not in [r.upper() for r in relationship_filter]:
                     continue
                 prev_id = edge.source
