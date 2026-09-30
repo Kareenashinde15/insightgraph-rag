@@ -1,14 +1,12 @@
 import { DocumentItem, GraphNode, GraphEdge, ChatMessage, ProcessingJob, SystemMetrics } from '../types';
 
-// Use relative '/api' path so that:
-// - Locally, Vite dev server proxies '/api' to FastAPI.
-// - In production, Vercel rewrites '/api' to Render backend directly from its edge network.
-// This completely eliminates CORS preflight, ISP/DNS blocks, and browser extension interference.
+// Use the local proxy during development. In production, call Render
+// directly so POST requests do not depend on Vercel's rewrite gateway.
 const configuredApiBase = import.meta.env.VITE_API_BASE_URL?.trim();
-const API_BASE = (configuredApiBase && !configuredApiBase.includes('onrender.com'))
-  ? configuredApiBase.replace(/\/$/, '')
-  : '/api';
 const DIRECT_API_BASE = 'https://insightgraph-rag-api.onrender.com/api';
+const API_BASE = configuredApiBase
+  ? configuredApiBase.replace(/\/$/, '')
+  : (import.meta.env.DEV ? '/api' : DIRECT_API_BASE);
 
 export async function fetchMetrics(): Promise<SystemMetrics> {
   const res = await fetch(`${API_BASE}/metrics`);
