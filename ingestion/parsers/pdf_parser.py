@@ -1,6 +1,27 @@
 from typing import List
 from ingestion.parsers.base import BaseParser, ParsedDocument, ParsedChunkDraft
 
+
+def _ocr_page(page) -> str:
+    """OCR a rendered PDF page when it contains no selectable text."""
+    try:
+        import fitz  # PyMuPDF
+        import numpy as np
+        from rapidocr_onnxruntime import RapidOCR
+    except ImportError as exc:
+        raise RuntimeError(
+            "OCR dependencies are not installed; cannot read image-only PDFs."
+        ) from exc
+
+    # Keep OCR bounded while retaining enough resolution for normal scanned text.
+    pixmap = page.get_pixmap(matrix=fitz.Matrix(2, 2), alpha=False)
+    image = np.frombuffer(pixmap.samples, dtype=np.uint8)
+    image = image.reshape(pixmap.height, pixmap.width, pixmap.n)
+    result, _ = RapidOCR()(image)
+    if not result:
+        return ""
+    return "\n".join(str(item[1]).strip() for item in result if len(item) > 1 and str(item[1]).strip())
+
 class PDFParser(BaseParser):
     def parse(self, file_path: str, filename: str) -> ParsedDocument:
         drafts: List[ParsedChunkDraft] = []
@@ -21,7 +42,18 @@ class PDFParser(BaseParser):
                     page_text = page.extract_text() or ""
                 except Exception as page_error:
                     parse_errors.append(f"Page {page_idx + 1}: {page_error}")
-                    continue
+                    page_text = ""
+
+                # Scanned/image-only PDFs have no selectable text. Use OCR for
+                # those pages so they remain searchable and citable.
+                if not page_text.strip():
+                    try:
+                        import fitz
+                        ocr_document = fitz.open(file_path)
+                        page_text = _ocr_page(ocr_document[page_idx])
+                        ocr_document.close()
+                    except Exception as ocr_error:
+                        parse_errors.append(f"Page {page_idx + 1} OCR: {ocr_error}")
                 raw_text_parts.append(page_text)
                 
                 # Split page text into logical paragraphs
