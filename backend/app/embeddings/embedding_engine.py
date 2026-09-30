@@ -32,7 +32,7 @@ class EmbeddingEngine:
                 return self._st_model
             try:
                 # pyrefly: ignore [missing-import]
-                from sentence_transformers import SentenceTransformer
+                from sentence_transformers import SentenceTransformer  # pyright: ignore[reportMissingImports]
                 self._st_model = SentenceTransformer(self.model_name, device=self.device)
                 get_dimension = getattr(
                     self._st_model,

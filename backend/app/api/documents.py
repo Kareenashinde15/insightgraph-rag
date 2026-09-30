@@ -1,4 +1,5 @@
 import os
+import io
 import uuid
 from pathlib import Path
 from secrets import token_hex
@@ -15,6 +16,34 @@ UPLOAD_DIR = os.path.abspath(os.getenv(
 MAX_UPLOAD_SIZE = int(os.getenv("MAX_UPLOAD_SIZE_BYTES", str(50 * 1024 * 1024)))
 ALLOWED_EXTENSIONS = {"txt", "md", "markdown", "html", "htm", "pdf", "docx"}
 os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+
+def upload_original_to_cloudinary(content: bytes, document_id: str, filename: str) -> tuple[Optional[str], Optional[str]]:
+    """Persist the original file remotely while retaining a local processing copy."""
+    cloud_name = os.getenv("CLOUDINARY_CLOUD_NAME")
+    api_key = os.getenv("CLOUDINARY_API_KEY")
+    api_secret = os.getenv("CLOUDINARY_API_SECRET")
+    if not all((cloud_name, api_key, api_secret)):
+        return None, None
+
+    import cloudinary  # pyright: ignore[reportMissingImports]
+    import cloudinary.uploader  # pyright: ignore[reportMissingImports]
+
+    cloudinary.config(
+        cloud_name=cloud_name,
+        api_key=api_key,
+        api_secret=api_secret,
+        secure=True,
+    )
+    result = cloudinary.uploader.upload(
+        io.BytesIO(content),
+        resource_type="raw",
+        folder="insightgraph/documents",
+        public_id=f"{document_id}_{Path(filename).stem}",
+        use_filename=False,
+        unique_filename=True,
+    )
+    return result.get("public_id"), result.get("secure_url")
 
 @router.get("", response_model=List[DocumentModel])
 def list_documents():
@@ -115,6 +144,13 @@ async def upload_document(
     doc_id = f"doc_{uuid.uuid4().hex[:8]}"
     file_path = os.path.join(UPLOAD_DIR, f"{doc_id}_{token_hex(8)}.{extension}")
 
+    try:
+        cloudinary_public_id, cloudinary_url = upload_original_to_cloudinary(
+            content, doc_id, safe_name
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"Cloudinary upload failed: {exc}") from exc
+
     with open(file_path, "wb") as buffer:
         buffer.write(content)
 
@@ -124,6 +160,8 @@ async def upload_document(
         file_type=extension,
         file_size=len(content),
         storage_path=file_path,
+        cloudinary_public_id=cloudinary_public_id,
+        cloudinary_url=cloudinary_url,
         status="processing",
         current_stage="Upload",
         progress=5,

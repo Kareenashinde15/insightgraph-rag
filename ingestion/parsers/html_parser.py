@@ -24,7 +24,8 @@ class HTMLParser(BaseParser):
             if not text:
                 continue
 
-            if elem.name in ["h1", "h2", "h3", "h4"]:
+            element_name = getattr(elem, "name", None)
+            if element_name in ["h1", "h2", "h3", "h4"]:
                 if current_block:
                     drafts.append(
                         ParsedChunkDraft(
