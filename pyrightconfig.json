@@ -1,0 +1,21 @@
+{
+  "include": [
+    "backend",
+    "ingestion"
+  ],
+  "exclude": [
+    "**/__pycache__",
+    ".venv",
+    "frontend/node_modules",
+    "frontend/dist"
+  ],
+  "venvPath": ".",
+  "venv": ".venv",
+  "executionEnvironments": [
+    {
+      "root": ".",
+      "extraPaths": ["."]
+    }
+  ],
+  "typeCheckingMode": "basic"
+}
