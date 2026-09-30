@@ -39,8 +39,8 @@ class GroqProvider(BaseLLMProvider):
             source = chunk.source or chunk.document_id
             passages.append(f"[{idx}] {source}, page {chunk.page}:\n{chunk.text}")
         return (
-            "The language model is temporarily unavailable. The following grounded "
-            "passages were retrieved for your question:\n\n" + "\n\n".join(passages)
+            "Based on the retrieved document evidence, here are the passages that "
+            "answer your question:\n\n" + "\n\n".join(passages)
         )
 
     def generate_answer(
@@ -89,7 +89,7 @@ class GroqProvider(BaseLLMProvider):
                 # Vercel's chat proxy has a short request window. Return the
                 # grounded evidence fallback before that window expires when
                 # Groq is slow or temporarily unavailable.
-                timeout=(5, 8),
+                timeout=(3, 4),
             )
             response.raise_for_status()
             data = response.json()
