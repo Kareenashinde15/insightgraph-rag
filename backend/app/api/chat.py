@@ -10,6 +10,17 @@ class ChatRequest(BaseModel):
     query: str = Field(..., min_length=1, max_length=4000)
     session_id: Optional[str] = "session_default"
 
+
+@router.get("")
+def chat_endpoint_info():
+    """Provide a friendly response when the endpoint is opened in a browser."""
+    return {
+        "service": "InsightGraph RAG chat",
+        "status": "ready",
+        "method": "POST",
+        "message": "Send a POST request with a JSON body containing 'query' to ask a question.",
+    }
+
 @router.post("", response_model=ChatMessageModel)
 def send_chat_query(req: ChatRequest):
     ks = KnowledgeService()

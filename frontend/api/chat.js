@@ -5,7 +5,15 @@ const BACKEND_CHAT_URL =
 
 export default async function handler(request, response) {
   if (request.method !== 'POST') {
-    response.setHeader('Allow', 'POST');
+    if (request.method === 'GET') {
+      return response.status(200).json({
+        service: 'InsightGraph RAG chat',
+        status: 'ready',
+        method: 'POST',
+        message: "Send a POST request with a JSON body containing 'query' to ask a question.",
+      });
+    }
+    response.setHeader('Allow', 'GET, POST');
     return response.status(405).json({ detail: 'Method not allowed' });
   }
 
