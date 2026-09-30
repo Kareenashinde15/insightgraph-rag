@@ -1,7 +1,11 @@
-const BACKEND_CHAT_URL =
-  process.env.BACKEND_API_URL
-    ? `${process.env.BACKEND_API_URL.replace(/\/$/, '')}/api/chat`
-    : 'https://insightgraph-rag-api.onrender.com/api/chat';
+// Keep chat on the known live backend. A stale Vercel BACKEND_API_URL can
+// otherwise make only this serverless route fail while the other API routes
+// continue to work through vercel.json rewrites.
+const BACKEND_CHAT_URL = 'https://insightgraph-rag-api.onrender.com/api/chat';
+
+export const config = {
+  maxDuration: 60,
+};
 
 export default async function handler(request, response) {
   if (request.method !== 'POST') {
