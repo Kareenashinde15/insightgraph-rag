@@ -72,7 +72,9 @@ class GroqProvider(BaseLLMProvider):
                     "Content-Type": "application/json",
                 },
                 json=payload,
-                timeout=(5, 60),
+                # Keep the API response inside Render/Vercel gateway limits.
+                # The provider returns a controlled fallback on timeout.
+                timeout=(5, 20),
             )
             response.raise_for_status()
             data = response.json()
