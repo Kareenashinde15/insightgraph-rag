@@ -178,7 +178,8 @@ class KnowledgeService:
         if original:
             return Path(str(original)).name
         public_id = str(resource.get("public_id", "")).rsplit("/", 1)[-1]
-        stem = public_id.split("_", 1)[-1] or "recovered-document"
+        parts = public_id.split("_", 2)
+        stem = parts[2] if len(parts) >= 3 else (parts[-1] or "recovered-document")
         # Older raw Cloudinary uploads did not preserve the extension in the
         # public ID or resource metadata. All legacy assets in this project
         # were PDFs; new uploads carry the exact original filename in context.
