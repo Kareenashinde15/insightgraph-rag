@@ -1,5 +1,4 @@
 import os
-import asyncio
 from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 load_dotenv()
@@ -16,27 +15,11 @@ from backend.app.services.knowledge_service import KnowledgeService
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    # Start the API immediately. Recovery runs in the background so Render's
-    # health checks and chat endpoint are not blocked by document re-indexing.
+    # Start the API immediately using local uploads and SQLite state.
     ks = KnowledgeService()
 
-    async def recover_in_background() -> None:
-        try:
-            recovery = await asyncio.to_thread(ks.recover_cloudinary_documents)
-            if recovery["recovered"] or recovery["failed"]:
-                print(f"Cloudinary recovery: {recovery}")
-        except Exception as exc:
-            print(f"Cloudinary recovery could not start: {type(exc).__name__}: {exc}")
-
-    recovery_task = None
-    if os.getenv("CLOUDINARY_RECOVERY_ENABLED", "true").lower() == "true":
-        recovery_task = asyncio.create_task(recover_in_background())
     print(f"Knowledge Base Online: {len(ks.documents)} documents, {len(ks.graph_engine.nodes)} entities, {len(ks.graph_engine.edges)} relationships.")
-    try:
-        yield
-    finally:
-        if recovery_task and not recovery_task.done():
-            recovery_task.cancel()
+    yield
 
 
 app = FastAPI(
@@ -46,7 +29,16 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-raw_origins = [origin.strip() for origin in os.getenv("CORS_ORIGINS", "").split(",") if origin.strip()]
+def normalize_origin(origin: str) -> str:
+    """Normalize configured browser origins before passing them to Starlette."""
+    return origin.strip().rstrip("/")
+
+
+raw_origins = [
+    normalize_origin(origin)
+    for origin in os.getenv("CORS_ORIGINS", "").split(",")
+    if origin.strip()
+]
 default_origins = [
     "http://localhost:3000",
     "http://localhost:5173",
@@ -55,9 +47,8 @@ default_origins = [
     "https://insightsrag.vercel.app",
     "https://insightgraph.vercel.app",
 ]
-# Fallback to empty lists if they are None/empty to prevent TypeErrors
 base_origins = (default_origins or []) + (raw_origins or [])
-cors_origins = list(set(base_origins + ["https://insightsrag.vercel.app"]))
+cors_origins = sorted({normalize_origin(origin) for origin in base_origins if origin})
 
 app.add_middleware(
     CORSMiddleware,

@@ -16,8 +16,6 @@ class DocumentModel(BaseModel):
     file_type: str
     file_size: int
     storage_path: Optional[str] = None
-    cloudinary_public_id: Optional[str] = None
-    cloudinary_url: Optional[str] = None
     status: str = "completed"  # uploading, processing, extracting_entities, extracting_relationships, building_graph, creating_embeddings, completed, failed
     current_stage: str = "Indexed"
     progress: int = 100

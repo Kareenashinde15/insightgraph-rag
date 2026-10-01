@@ -1,11 +1,12 @@
 import { DocumentItem, GraphNode, GraphEdge, ChatMessage, ProcessingJob, SystemMetrics } from '../types';
 
-// Keep browser requests same-origin in production. Vercel proxies /api to
-// Render server-to-server, so the browser never needs cross-origin CORS.
 const configuredApiBase = import.meta.env.VITE_API_BASE_URL?.trim();
-const API_BASE = import.meta.env.DEV && configuredApiBase
+const defaultProductionApiBase = 'https://insightgraph-rag-api.onrender.com/api';
+const API_BASE = configuredApiBase
   ? configuredApiBase.replace(/\/$/, '')
-  : '/api';
+  : import.meta.env.PROD
+    ? defaultProductionApiBase
+    : '/api';
 
 export async function fetchMetrics(): Promise<SystemMetrics> {
   const res = await fetch(`${API_BASE}/metrics`);
@@ -115,11 +116,9 @@ export async function hybridSearch(query: string): Promise<any> {
 }
 
 export async function sendChatMessage(query: string, sessionId: string = 'session_default'): Promise<ChatMessage> {
-  // Chat may take longer than a Vercel rewrite window. Call the Render API
-  // directly; the backend explicitly allows the Vercel origins via CORS.
-  const chatUrl = import.meta.env.PROD
-    ? 'https://insightgraph-rag-api.onrender.com/api/chat'
-    : `${API_BASE}/chat`;
+  // Use the configured Render API in production so this remains correct if
+  // the service URL changes. The backend allows the Vercel origin via CORS.
+  const chatUrl = `${API_BASE}/chat`;
   const res = await fetch(chatUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
