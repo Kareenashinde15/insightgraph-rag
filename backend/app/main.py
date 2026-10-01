@@ -55,10 +55,13 @@ default_origins = [
     "https://insightsrag.vercel.app",
     "https://insightgraph.vercel.app",
 ]
-cors_origins = list(set(default_origins + raw_origins +["https://insightsrag.vercel.app"]))
+# Fallback to empty lists if they are None/empty to prevent TypeErrors
+base_origins = (default_origins or []) + (raw_origins or [])
+cors_origins = list(set(base_origins + ["https://insightsrag.vercel.app"]))
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins= cors_origins,
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
