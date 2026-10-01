@@ -194,6 +194,7 @@ class KnowledgeService:
         upload_dir.mkdir(parents=True, exist_ok=True)
         path = upload_dir / f"{document_id}_recovered.{extension}"
         path.write_bytes(content)
+        return str(path)
 
 
     @staticmethod
@@ -306,6 +307,7 @@ class KnowledgeService:
             max_hops=int(self.settings.get("max_graph_hops", 3))
         )
         retrieval_latency_ms = round((time.perf_counter() - retrieval_started) * 1000, 3)
+        retrieval_result.retrieval_trace["retrieval_latency_ms"] = retrieval_latency_ms
         llm = get_llm_provider(self.settings.get("llm_provider", "groq"))
         llm_started = time.perf_counter()
         llm_response = llm.generate_answer(
