@@ -1,26 +1,36 @@
 import os
 import time
-import urllib.request
-from datetime import datetime
-from pathlib import Path
-from typing import Dict, List, Optional, Any
-from backend.app.models.schema import DocumentModel, DocumentChunkModel, GraphNodeModel, GraphEdgeModel, ProcessingJobModel, ChatMessageModel, ChatSessionModel, CitationModel
-from backend.app.graph.graph_engine import GraphEngine
-from backend.app.retrieval.vector_store import VectorStore, VectorRecord
-from backend.app.retrieval.hybrid_retriever import HybridRetriever
-from backend.app.retrieval.citation_validator import CitationValidator
+import uuid
+from datetime import datetime, timezone
+from typing import Any
+
 from backend.app.embeddings.embedding_engine import EmbeddingEngine
-from backend.app.pipelines.document_pipeline import DocumentProcessingPipeline
+from backend.app.graph.graph_engine import GraphEngine
 from backend.app.llm.providers import get_llm_provider
-from ingestion.normalization.conflict_detector import ConflictDetector
 from backend.app.local_db import LocalDatabase
+from backend.app.models.schema import (
+    ChatMessageModel,
+    ChatSessionModel,
+    CitationModel,
+    DocumentChunkModel,
+    DocumentModel,
+    GraphEdgeModel,
+    GraphNodeModel,
+    ProcessingJobModel,
+)
+from backend.app.pipelines.document_pipeline import DocumentProcessingPipeline
+from backend.app.retrieval.citation_validator import CitationValidator
+from backend.app.retrieval.hybrid_retriever import HybridRetriever
+from backend.app.retrieval.vector_store import VectorRecord, VectorStore
+from ingestion.normalization.conflict_detector import ConflictDetector
+
 
 class KnowledgeService:
     _instance = None
 
     def __new__(cls):
         if cls._instance is None:
-            cls._instance = super(KnowledgeService, cls).__new__(cls)
+            cls._instance = super().__new__(cls)
             cls._instance._init_service()
         return cls._instance
 
@@ -38,10 +48,10 @@ class KnowledgeService:
         self.citation_validator = CitationValidator()
         self.conflict_detector = ConflictDetector()
 
-        self.documents: Dict[str, DocumentModel] = {}
-        self.document_chunks: Dict[str, List[DocumentChunkModel]] = {}
-        self.jobs: Dict[str, ProcessingJobModel] = {}
-        self.chat_sessions: Dict[str, ChatSessionModel] = {}
+        self.documents: dict[str, DocumentModel] = {}
+        self.document_chunks: dict[str, list[DocumentChunkModel]] = {}
+        self.jobs: dict[str, ProcessingJobModel] = {}
+        self.chat_sessions: dict[str, ChatSessionModel] = {}
         self.db = LocalDatabase()
         self.metrics = {
             "query_count": 0,
@@ -78,7 +88,7 @@ class KnowledgeService:
 
 
     @staticmethod
-    def _dump(model: Any) -> Dict[str, Any]:
+    def _dump(model: Any) -> dict[str, Any]:
         if hasattr(model, "model_dump"):
             return model.model_dump(mode="json")
         return model.dict()
@@ -165,20 +175,20 @@ class KnowledgeService:
         self.persist_graph()
         self.persist_vectors()
 
-    def process_document(self, document: DocumentModel, file_path: str, job: ProcessingJobModel) -> Dict[str, Any]:
+    def process_document(self, document: DocumentModel, file_path: str, job: ProcessingJobModel) -> dict[str, Any]:
         self.metrics["processing_count"] += 1
         result = self.pipeline.process(document=document, file_path=file_path, job=job)
         chunks = result.get("chunks")
         if chunks is not None:
             self.document_chunks[document.id] = chunks
         self.persist_all()
-        self.metrics["last_processing_at"] = datetime.now().isoformat()
+        self.metrics["last_processing_at"] = datetime.now(timezone.utc).isoformat()
         if result.get("error"):
             self.metrics["failed_jobs"] += 1
         self.persist_metrics()
         return result
 
-    def ask(self, query: str, session_id: Optional[str] = "session_default") -> ChatMessageModel:
+    def ask(self, query: str, session_id: str | None = "session_default") -> ChatMessageModel:
         request_started = time.perf_counter()
         retrieval_started = time.perf_counter()
         retrieval_result = self.retriever.retrieve(
@@ -206,12 +216,12 @@ class KnowledgeService:
         retrieval_result.retrieval_trace["llm_grounded"] = llm_response.grounded
         retrieval_result.retrieval_trace["uncertainty_noted"] = llm_response.uncertainty_noted
         retrieval_result.retrieval_trace["llm_model"] = llm_response.model
+        retrieval_result.retrieval_trace["retrieval_latency_ms"] = retrieval_latency_ms
         retrieval_result.retrieval_trace["llm_latency_ms"] = llm_latency_ms
         retrieval_result.retrieval_trace["total_query_latency_ms"] = round(
             (time.perf_counter() - request_started) * 1000, 3
         )
 
-        import uuid
         msg_id = f"msg_{uuid.uuid4().hex[:8]}"
 
         citations_models = [
@@ -238,7 +248,7 @@ class KnowledgeService:
             graph_evidence_paths=retrieval_result.graph_evidence_paths,
             retrieval_trace=retrieval_result.retrieval_trace,
             query_plan=[s.description for s in retrieval_result.query_plan.steps],
-            created_at=datetime.now().isoformat(),
+            created_at=datetime.now(timezone.utc).isoformat(),
         )
 
         if session_id:
@@ -270,12 +280,12 @@ class KnowledgeService:
         self.metrics["total_tokens_consumed"] += int(llm_response.tokens_used or 0)
         self.metrics["total_prompt_tokens"] += int(llm_response.prompt_tokens or 0)
         self.metrics["total_completion_tokens"] += int(llm_response.completion_tokens or 0)
-        self.metrics["last_query_at"] = datetime.now().isoformat()
+        self.metrics["last_query_at"] = datetime.now(timezone.utc).isoformat()
         self.persist_metrics()
 
         return assistant_msg
 
-    def get_metrics(self) -> Dict[str, Any]:
+    def get_metrics(self) -> dict[str, Any]:
         edges = self.graph_engine.get_all_edges()
         nodes = self.graph_engine.get_all_nodes()
         chunks_count = sum(len(c) for c in self.document_chunks.values())
