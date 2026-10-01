@@ -1,10 +1,9 @@
 import os
 import time
 import urllib.request
-import uuid
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional, Any
 from backend.app.models.schema import DocumentModel, DocumentChunkModel, GraphNodeModel, GraphEdgeModel, ProcessingJobModel, ChatMessageModel, ChatSessionModel, CitationModel
 from backend.app.graph.graph_engine import GraphEngine
 from backend.app.retrieval.vector_store import VectorStore, VectorRecord
@@ -44,7 +43,7 @@ class KnowledgeService:
         self.jobs: Dict[str, ProcessingJobModel] = {}
         self.chat_sessions: Dict[str, ChatSessionModel] = {}
         self.db = LocalDatabase()
-        self.metrics: Dict[str, Any] = {
+        self.metrics = {
             "query_count": 0,
             "processing_count": 0,
             "failed_jobs": 0,
@@ -184,8 +183,8 @@ class KnowledgeService:
         retrieval_started = time.perf_counter()
         retrieval_result = self.retriever.retrieve(
             query=query,
-            top_k=self.settings.get("top_k_retrieval", 5),
-            max_hops=self.settings.get("max_graph_hops", 3)
+            top_k=int(self.settings.get("top_k_retrieval", 5)),
+            max_hops=int(self.settings.get("max_graph_hops", 3))
         )
         retrieval_latency_ms = round((time.perf_counter() - retrieval_started) * 1000, 3)
         llm = get_llm_provider(self.settings.get("llm_provider", "groq"))
@@ -194,7 +193,7 @@ class KnowledgeService:
             query=query,
             context=retrieval_result.assembled_context,
             retrieval_result=retrieval_result,
-            temperature=self.settings.get("temperature", 0.2)
+            temperature=float(self.settings.get("temperature", 0.2))
         )
         llm_latency_ms = round((time.perf_counter() - llm_started) * 1000, 3)
 
@@ -212,6 +211,7 @@ class KnowledgeService:
             (time.perf_counter() - request_started) * 1000, 3
         )
 
+        import uuid
         msg_id = f"msg_{uuid.uuid4().hex[:8]}"
 
         citations_models = [
@@ -267,9 +267,9 @@ class KnowledgeService:
         self.metrics["total_graph_query_latency_ms"] += float(trace.get("graph_query_latency_ms", 0.0))
         self.metrics["total_vector_search_latency_ms"] += float(trace.get("vector_search_latency_ms", 0.0))
         self.metrics["total_query_latency_ms"] += float(trace.get("total_query_latency_ms", 0.0))
-        self.metrics["total_tokens_consumed"] += llm_response.tokens_used or 0
-        self.metrics["total_prompt_tokens"] += llm_response.prompt_tokens or 0
-        self.metrics["total_completion_tokens"] += llm_response.completion_tokens or 0
+        self.metrics["total_tokens_consumed"] += int(llm_response.tokens_used or 0)
+        self.metrics["total_prompt_tokens"] += int(llm_response.prompt_tokens or 0)
+        self.metrics["total_completion_tokens"] += int(llm_response.completion_tokens or 0)
         self.metrics["last_query_at"] = datetime.now().isoformat()
         self.persist_metrics()
 
@@ -285,7 +285,7 @@ class KnowledgeService:
         projects_count = sum(1 for n in nodes if n.type.lower() == "project")
         technologies_count = sum(1 for n in nodes if n.type.lower() in ["technology", "programming_language", "database", "framework"])
 
-        query_count = max(1, self.metrics.get("query_count", 0))
+        query_count = max(1, int(self.metrics.get("query_count", 0)))
 
         return {
             "documents": {
@@ -318,13 +318,13 @@ class KnowledgeService:
                 "total_query_latency_ms": round(self.metrics["total_query_latency_ms"] / query_count, 2),
             },
             "token_usage": {
-                "total_tokens_consumed": self.metrics["total_tokens_consumed"],
-                "total_prompt_tokens": self.metrics["total_prompt_tokens"],
-                "total_completion_tokens": self.metrics["total_completion_tokens"],
+                "total_tokens_consumed": int(self.metrics["total_tokens_consumed"]),
+                "total_prompt_tokens": int(self.metrics["total_prompt_tokens"]),
+                "total_completion_tokens": int(self.metrics["total_completion_tokens"]),
             },
-            "query_count": self.metrics["query_count"],
-            "processing_count": self.metrics["processing_count"],
-            "failed_jobs": self.metrics["failed_jobs"],
+            "query_count": int(self.metrics["query_count"]),
+            "processing_count": int(self.metrics["processing_count"]),
+            "failed_jobs": int(self.metrics["failed_jobs"]),
             "last_query_at": self.metrics.get("last_query_at"),
             "last_processing_at": self.metrics.get("last_processing_at"),
             "llm_provider": self.settings.get("llm_provider", "groq"),
