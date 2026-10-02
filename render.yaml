@@ -19,8 +19,7 @@ services:
       - key: MONGODB_DATABASE
         value: insightgraph
       - key: ENABLE_KNOWLEDGE_GRAPH
-        # Graph enrichment remains optional and is processed asynchronously.
-        value: "false"
+        value: "true"
       - key: OPENDATALOADER_HYBRID
         value: ""
       - key: OPENDATALOADER_HYBRID_URL
