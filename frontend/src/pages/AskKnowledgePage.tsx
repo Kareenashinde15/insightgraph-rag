@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { ChatMessage, Citation } from '../types';
 import { sendChatMessage, fetchChatSessions, fetchConflicts } from '../services/api';
 import { 
@@ -80,46 +82,53 @@ export const AskKnowledgePage: React.FC<AskKnowledgePageProps> = ({ onOpenDocume
     }
   };
 
-  const renderContentWithClickableCitations = (content: string, citations?: Citation[]) => {
-    if (!citations || citations.length === 0) return content;
-
-    // Replace [1], [2], [3] with clickable links
-    const parts = content.split(/(\[\d+\])/g);
-    return parts.map((part, index) => {
-      const match = part.match(/\[(\d+)\]/);
-      if (match) {
-        const citationIdx = parseInt(match[1], 10);
-        const cit = citations.find((c) => c.citation_index === citationIdx);
-        if (cit) {
-          return (
-            <span
-              key={index}
-              onClick={() => onOpenDocument(cit.document_id, cit.chunk_id)}
-              title={`View Source: ${cit.document_name} (Page ${cit.page})`}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                padding: '1px 5px',
-                margin: '0 2px',
-                borderRadius: '4px',
-                backgroundColor: 'rgba(46, 58, 140, 0.1)',
-                color: 'var(--jm-dark-blue)',
-                fontWeight: 700,
-                fontSize: '12px',
-                cursor: 'pointer',
-                border: '1px solid rgba(46, 58, 140, 0.25)',
-                textDecoration: 'none',
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--jm-dark-blue)', e.currentTarget.style.color = '#FFFFFF')}
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'rgba(46, 58, 140, 0.1)', e.currentTarget.style.color = 'var(--jm-dark-blue)')}
-            >
-              [{citationIdx}]
-            </span>
-          );
-        }
-      }
-      return part;
+  const renderAnswerMarkdown = (content: string, citations?: Citation[]) => {
+    const availableCitations = citations || [];
+    const markdown = content.replace(/\[(\d+)\]/g, (fullMatch, rawIndex: string) => {
+      const citationIndex = Number(rawIndex);
+      return availableCitations.some((citation) => citation.citation_index === citationIndex)
+        ? `[${rawIndex}](citation://${citationIndex})`
+        : fullMatch;
     });
+
+    return (
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        components={{
+          a: ({ href, children }) => {
+            if (href?.startsWith('citation://')) {
+              const citationIndex = Number(href.replace('citation://', ''));
+              const citation = availableCitations.find((item) => item.citation_index === citationIndex);
+              if (citation) {
+                return (
+                  <button
+                    type="button"
+                    className="answer-citation"
+                    onClick={() => onOpenDocument(citation.document_id, citation.chunk_id)}
+                    title={`View source: ${citation.document_name} (Page ${citation.page})`}
+                  >
+                    {children}
+                  </button>
+                );
+              }
+            }
+            return <a href={href} target="_blank" rel="noreferrer">{children}</a>;
+          },
+          table: ({ children }) => (
+            <div className="answer-table-scroll">
+              <table className="answer-table">{children}</table>
+            </div>
+          ),
+          p: ({ children }) => <p className="answer-paragraph">{children}</p>,
+          ul: ({ children }) => <ul className="answer-list">{children}</ul>,
+          ol: ({ children }) => <ol className="answer-list">{children}</ol>,
+          blockquote: ({ children }) => <blockquote className="answer-quote">{children}</blockquote>,
+          code: ({ children }) => <code className="answer-inline-code">{children}</code>,
+        }}
+      >
+        {markdown}
+      </ReactMarkdown>
+    );
   };
 
   // Keep the newest question/answer pair at the top so the user immediately
@@ -313,9 +322,8 @@ export const AskKnowledgePage: React.FC<AskKnowledgePageProps> = ({ onOpenDocume
                 lineHeight: 1.7,
                 color: 'var(--text-primary)',
                 marginBottom: '20px',
-                whiteSpace: 'pre-wrap',
-              }}>
-                {renderContentWithClickableCitations(msg.content, msg.citations)}
+              }} className="answer-markdown">
+                {renderAnswerMarkdown(msg.content, msg.citations)}
               </div>
 
               {/* Visual Graph Evidence Path */}
