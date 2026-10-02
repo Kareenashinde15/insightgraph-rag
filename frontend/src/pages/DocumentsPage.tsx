@@ -181,12 +181,6 @@ export const DocumentsPage: React.FC<DocumentsPageProps> = ({ onOpenDocument }) 
           </button>
         </div>
 
-        {documents.some((doc) => doc.status === 'completed' && doc.entity_count === 0 && doc.relationship_count === 0) && (
-          <div className="document-graph-notice" role="status">
-            Entity and relationship extraction is disabled on this API deployment. Set <code>ENABLE_KNOWLEDGE_GRAPH=true</code> in Render, then reprocess this document.
-          </div>
-        )}
-
         <div className="responsive-table-wrap" style={{ overflowX: 'auto' }}>
           <table className="responsive-data-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13.5px' }}>
             <thead>

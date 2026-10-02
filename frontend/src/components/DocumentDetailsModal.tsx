@@ -203,7 +203,7 @@ export const DocumentDetailsModal: React.FC<DocumentDetailsModalProps> = ({
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '12px' }}>
               {entities.length === 0 && (
                 <div className="graph-empty-state">
-                  No entities were extracted. This deployment has optional knowledge-graph extraction disabled; enable <code>ENABLE_KNOWLEDGE_GRAPH=true</code> in Render and reprocess the document.
+                  No entities are available for this document.
                 </div>
               )}
               {entities.map((ent) => (
