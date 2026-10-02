@@ -25,7 +25,7 @@ Set these values in Render:
 
 ```text
 GROQ_API_KEY=<new Groq key>
-CORS_ORIGINS=https://<your-vercel-project>.vercel.app
+CORS_ORIGINS=https://insightsrag.vercel.app
 ```
 
 The remaining variables are already defined in `render.yaml`. After deployment, verify:
