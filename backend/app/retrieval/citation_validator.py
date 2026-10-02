@@ -20,7 +20,7 @@ class CitationValidator:
         citations: List[Dict[str, Any]],
         retrieval_result: Any,
     ) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
-        chunks = list(getattr(retrieval_result, "vector_chunks", []) or [])
+        chunks = list(getattr(retrieval_result, "retrieved_sections", []) or [])
         allowed = {chunk.chunk_id: chunk for chunk in chunks}
         accepted: List[Dict[str, Any]] = []
         issues: List[str] = []

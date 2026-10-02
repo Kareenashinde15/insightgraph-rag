@@ -118,10 +118,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
           </div>
         </div>
 
-        {/* Card 3: Embeddings */}
+        {/* Card 3: Vectorless retrieval */}
         <div className="jm-card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-            <span style={{ fontSize: '13.5px', fontWeight: 600, color: 'var(--text-secondary)' }}>Embeddings</span>
+            <span style={{ fontSize: '13.5px', fontWeight: 600, color: 'var(--text-secondary)' }}>Retrieval Mode</span>
             <div style={{
               width: '36px',
               height: '36px',
@@ -136,10 +136,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
           </div>
           <div>
             <div style={{ fontSize: '28px', fontWeight: 700, color: 'var(--text-primary)' }}>
-              {metrics ? metrics.knowledge_sources.total_embeddings : 0}
+              Text
             </div>
             <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>
-              Local semantic index
+              Vectorless MongoDB search
             </div>
           </div>
         </div>
@@ -162,10 +162,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
           </div>
           <div>
             <div style={{ fontSize: '28px', fontWeight: 700, color: 'var(--text-primary)' }}>
-              {metrics ? metrics.knowledge_sources.total_chunks : 0} chunks
+              {metrics ? metrics.knowledge_sources.total_chunks : 0} sections
             </div>
             <div style={{ fontSize: '13px', color: '#10B981', fontWeight: 600, marginTop: '4px' }}>
-              ● Vector index active
+              ● Text index active
             </div>
           </div>
         </div>
@@ -213,7 +213,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
                   <div>
                     <div style={{ fontSize: '13.5px', fontWeight: 600 }}>{doc.filename}</div>
                     <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                      {doc.chunk_count} indexed chunks · {doc.file_type.toUpperCase()}
+                      {doc.chunk_count} indexed sections · {doc.file_type.toUpperCase()}
                     </div>
                   </div>
                 </div>

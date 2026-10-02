@@ -18,7 +18,7 @@ class DocumentModel(BaseModel):
     storage_path: Optional[str] = None
     cloudinary_public_id: Optional[str] = None
     cloudinary_url: Optional[str] = None
-    status: str = "completed"  # uploading, processing, extracting_entities, extracting_relationships, building_graph, creating_embeddings, completed, failed
+    status: str = "completed"  # uploading, processing, extracting_entities, extracting_relationships, building_graph, indexed, completed, failed
     current_stage: str = "Indexed"
     progress: int = 100
     chunk_count: int = 0

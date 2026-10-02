@@ -30,7 +30,7 @@ export const DocumentDetailsModal: React.FC<DocumentDetailsModalProps> = ({
     'Store Original',
     'Extract Text',
     'Chunk Document',
-    'Generate Embeddings',
+    'Build Text Sections',
     hasKnowledgeGraphData ? 'Extract Knowledge Graph' : 'Optional Knowledge Graph Skipped',
     'Store Provenance & Mark Complete',
   ];

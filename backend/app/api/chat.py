@@ -3,7 +3,7 @@ from datetime import datetime
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 from typing import List, Optional
-from backend.app.services.knowledge_service import KnowledgeService
+from backend.app.services.service_factory import get_knowledge_service
 from backend.app.models.schema import ChatMessageModel, ChatSessionModel, CitationModel
 
 router = APIRouter(prefix="/api/chat", tags=["Ask Knowledge / Chat"])
@@ -25,7 +25,7 @@ def chat_endpoint_info():
 
 @router.post("", response_model=ChatMessageModel)
 def send_chat_query(req: ChatRequest):
-    ks = KnowledgeService()
+    ks = get_knowledge_service()
     if not req.query.strip():
         raise HTTPException(status_code=400, detail="Query cannot be empty")
     try:
@@ -51,11 +51,11 @@ def send_chat_query(req: ChatRequest):
                 snippet=chunk.text[:220],
                 similarity_score=chunk.similarity,
             )
-            for idx, chunk in enumerate(result.vector_chunks, 1)
+            for idx, chunk in enumerate(result.retrieved_sections, 1)
         ]
         passages = [
             f"[{idx}] {chunk.source or chunk.document_id}, page {chunk.page}:\n{chunk.text}"
-            for idx, chunk in enumerate(result.vector_chunks, 1)
+            for idx, chunk in enumerate(result.retrieved_sections, 1)
         ]
         content = (
             "Based on the retrieved document evidence:\n\n"
@@ -76,12 +76,12 @@ def send_chat_query(req: ChatRequest):
 
 @router.get("/sessions", response_model=List[ChatSessionModel])
 def list_chat_sessions():
-    ks = KnowledgeService()
+    ks = get_knowledge_service()
     return list(ks.chat_sessions.values())
 
 @router.get("/sessions/{session_id}", response_model=ChatSessionModel)
 def get_chat_session(session_id: str):
-    ks = KnowledgeService()
+    ks = get_knowledge_service()
     if session_id not in ks.chat_sessions:
         raise HTTPException(status_code=404, detail="Chat session not found")
     return ks.chat_sessions[session_id]

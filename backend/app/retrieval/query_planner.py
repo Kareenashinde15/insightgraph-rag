@@ -68,7 +68,7 @@ class QueryPlanner:
             steps.append(
                 QueryPlanStep(
                     step_number=step_num,
-                    action="VECTOR_RETRIEVAL",
+                    action="TEXT_RETRIEVAL",
                     description=f"Perform local semantic search for query passages relevant to {', '.join(entities)}.",
                 )
             )
@@ -78,7 +78,7 @@ class QueryPlanner:
                 QueryPlanStep(
                     step_number=step_num,
                     action="RERANK_AND_ASSEMBLE",
-                    description="Merge graph facts with retrieved vector chunks and assemble structured evidence context.",
+                    description="Merge graph facts with retrieved text sections and assemble structured evidence context.",
                 )
             )
             step_num += 1
@@ -94,8 +94,8 @@ class QueryPlanner:
             steps = [
                 QueryPlanStep(
                     step_number=1,
-                    action="VECTOR_RETRIEVAL",
-                    description="Query the local vector index for top-K semantically relevant document chunks.",
+                    action="TEXT_RETRIEVAL",
+                    description="Query MongoDB text indexes for top-K relevant document sections.",
                 ),
                 QueryPlanStep(
                     step_number=2,

@@ -1,60 +1,70 @@
-# InsightGraph RAG deployment
+# InsightGraph deployment
 
-This project is prepared for a split hobby deployment:
+The deployment is split between Vercel and Render:
 
-- Vercel hosts the React/Vite frontend.
-- Render hosts the FastAPI backend, local embeddings, SQLite, uploads, and Groq calls.
+- Vercel hosts the React frontend.
+- Render hosts the FastAPI backend.
+- Cloudinary stores original uploaded files.
+- MongoDB Atlas stores indexed sections and application state.
+- Groq generates grounded answers.
 
-The frontend reads `VITE_API_BASE_URL` at build time. Leave it empty for local development; set it to the deployed backend API URL in Vercel, including `/api`, for example:
+## Render environment variables
+
+Set these in the Render service:
+
+```text
+STORAGE_BACKEND=mongodb
+MONGODB_URI=<MongoDB Atlas connection string>
+MONGODB_DATABASE=insightgraph
+CLOUDINARY_CLOUD_NAME=<Cloudinary cloud name>
+CLOUDINARY_API_KEY=<Cloudinary API key>
+CLOUDINARY_API_SECRET=<Cloudinary API secret>
+GROQ_API_KEY=<new Groq key>
+CORS_ORIGINS=https://insightsrag.vercel.app,https://insightgraph.vercel.app,https://frontend-ashen-three-16.vercel.app
+ENABLE_KNOWLEDGE_GRAPH=false
+OPENDATALOADER_HYBRID=
+OPENDATALOADER_HYBRID_URL=<optional hybrid server URL>
+OPENDATALOADER_HYBRID_MODE=
+```
+
+The MongoDB URI and all provider keys are secrets. Never commit them to GitHub.
+
+## PDF parsing
+
+OpenDataLoader is the primary PDF parser. The Render runtime must have Java
+11 or newer available because the parser runs its local JVM engine. Complex or
+image-only PDFs can use an OpenDataLoader hybrid server by setting
+`OPENDATALOADER_HYBRID`, `OPENDATALOADER_HYBRID_URL`, and optionally
+`OPENDATALOADER_HYBRID_MODE`. Without hybrid mode, the backend keeps a bounded
+OCR fallback for scanned PDFs.
+
+## MongoDB setup
+
+Create an Atlas database named `insightgraph` and allow the Render service to
+connect. The backend creates its collections and text indexes on startup:
+
+- `documents`
+- `chunks` (plain text chunks, without embeddings)
+- `processing_jobs`
+- `chat_sessions`
+- `metrics`
+- `settings`
+- `graph_nodes`
+- `graph_edges`
+
+## Vercel environment
+
+For the frontend, use:
 
 ```text
 VITE_API_BASE_URL=https://insightgraph-rag-api.onrender.com/api
 ```
 
-## 1. Before deployment
-
-1. Create a new Groq API key. Do not reuse a key that has been exposed in chat or committed to a repository.
-2. Push the project to a private or public GitHub repository.
-3. Do not commit `.env`, `data/knowledge.db`, `uploads/`, or private PDFs.
-
-## 2. Deploy the backend on Render
-
-Create a Render Web Service from the repository. The included `render.yaml` contains the build command, start command, health check, and safe defaults.
-
-Set these values in Render:
+Redeploy the frontend after changing this value. Verify the backend with:
 
 ```text
-GROQ_API_KEY=<new Groq key>
-CORS_ORIGINS=https://insightsrag.vercel.app
+https://insightgraph-rag-api.onrender.com/health
 ```
 
-The remaining variables are already defined in `render.yaml`. After deployment, verify:
-
-```text
-https://<your-render-service>.onrender.com/health
-```
-
-## 3. Deploy the frontend on Vercel
-
-Create a Vercel project from the same repository with:
-
-```text
-Root directory: frontend
-Framework preset: Vite
-Build command: npm run build
-Output directory: dist
-```
-
-Add this Vercel environment variable for Production and Preview environments:
-
-```text
-VITE_API_BASE_URL=https://<your-render-service>.onrender.com/api
-```
-
-Redeploy after adding the variable. Then open the Vercel URL and test upload, processing, search, and Ask Knowledge.
-
-## Runtime expectations
-
-The default deployment uses the local SQLite database and filesystem. On hosts with an ephemeral filesystem, uploaded files and SQLite data can reset after a restart or redeploy. This is acceptable for an interviewer demo because the interviewer can upload a PDF during the session. Persistent storage can be added later if long-term document retention is needed.
-
-Keep `ENABLE_KNOWLEDGE_GRAPH=false` for the default demo. Enable it only when demonstrating the optional entity and relationship extraction feature.
+The public frontend origin must remain exactly:
+`https://insightsrag.vercel.app`.

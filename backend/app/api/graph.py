@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Body, Query
 from typing import Dict, Any, Optional
 from pydantic import BaseModel
-from backend.app.services.knowledge_service import KnowledgeService
+from backend.app.services.service_factory import get_knowledge_service
 
 router = APIRouter(prefix="/api/graph", tags=["Knowledge Graph"])
 
@@ -10,7 +10,7 @@ class CypherQueryRequest(BaseModel):
 
 @router.get("")
 def get_entire_graph():
-    ks = KnowledgeService()
+    ks = get_knowledge_service()
     nodes = ks.graph_engine.get_all_nodes()
     edges = ks.graph_engine.get_all_edges()
     return {
@@ -24,7 +24,7 @@ def get_entire_graph():
 
 @router.get("/entity/{entity_id}")
 def get_entity_subgraph(entity_id: str, depth: int = Query(1, ge=1, le=5)):
-    ks = KnowledgeService()
+    ks = get_knowledge_service()
     node = ks.graph_engine.nodes.get(entity_id) or ks.graph_engine.find_node_by_name(entity_id)
     if not node:
         raise HTTPException(status_code=404, detail="Entity not found")
@@ -38,7 +38,7 @@ def get_entity_subgraph(entity_id: str, depth: int = Query(1, ge=1, le=5)):
 
 @router.post("/query")
 def execute_graph_query(req: CypherQueryRequest):
-    ks = KnowledgeService()
+    ks = get_knowledge_service()
     try:
         res = ks.graph_engine.execute_read_only_cypher(req.query)
         return res

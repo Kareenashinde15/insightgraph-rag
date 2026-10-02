@@ -1,5 +1,6 @@
 import os
 import sys
+import tempfile
 # Add workspace root to sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
@@ -9,8 +10,8 @@ from ingestion.extraction.entity_extractor import HybridEntityExtractor
 from ingestion.extraction.relationship_extractor import RelationshipExtractor
 from ingestion.normalization.normalizer import EntityNormalizer
 from backend.app.graph.graph_engine import GraphEngine
-from backend.app.models.schema import GraphNodeModel, GraphEdgeModel
-from backend.app.services.knowledge_service import KnowledgeService
+from backend.app.models.schema import DocumentModel, GraphNodeModel, GraphEdgeModel, ProcessingJobModel
+from backend.app.pipelines.vectorless_pipeline import VectorlessDocumentPipeline
 
 def test_chunking():
     chunker = ConfigurableChunker(target_chunk_size=50, overlap_size=10)
@@ -70,20 +71,36 @@ def test_graph_and_multi_hop():
     assert len(paths) > 0
     print("test_graph_and_multi_hop passed!")
 
-def test_knowledge_service_query():
-    ks = KnowledgeService()
-    assert ks.documents == {}
-    assert ks.graph_engine.get_all_nodes() == []
-    ans = ks.ask("Which projects are in the knowledge base?")
-    assert len(ans.content) > 20
-    assert len(ans.citations) == 0
-    assert "Groq is not configured" in ans.content
-    print("test_knowledge_service_query passed!")
+def test_vectorless_pipeline():
+    handle, path = tempfile.mkstemp(suffix=".txt", text=True)
+    os.close(handle)
+    try:
+        with open(path, "w", encoding="utf-8") as stream:
+            stream.write("Capital expenditure creates a long-term asset.\n")
+        document = DocumentModel(
+            id="doc_vectorless_test",
+            filename="vectorless-test.txt",
+            file_type="txt",
+            file_size=os.path.getsize(path),
+        )
+        job = ProcessingJobModel(
+            id="job_vectorless_test",
+            document_id=document.id,
+            filename=document.filename,
+        )
+        result = VectorlessDocumentPipeline(GraphEngine()).process(document, path, job)
+        assert result["chunks_count"] >= 1
+        assert result["entities_count"] == 0
+        assert document.status == "completed"
+        print("test_vectorless_pipeline passed!")
+    finally:
+        if os.path.exists(path):
+            os.unlink(path)
 
 if __name__ == "__main__":
     test_chunking()
     test_extraction()
     test_entity_resolution()
     test_graph_and_multi_hop()
-    test_knowledge_service_query()
+    test_vectorless_pipeline()
     print("ALL TESTS PASSED SUCCESSFULLY!")

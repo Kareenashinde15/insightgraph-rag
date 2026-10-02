@@ -17,7 +17,7 @@ class GroqProvider(BaseLLMProvider):
     @staticmethod
     def _citations(retrieval_result: Any) -> list[dict[str, Any]]:
         citations = []
-        for idx, chunk in enumerate(getattr(retrieval_result, "vector_chunks", []), 1):
+        for idx, chunk in enumerate(getattr(retrieval_result, "retrieved_sections", []), 1):
             citations.append({
                 "citation_index": idx,
                 "document_id": chunk.document_id,
@@ -31,7 +31,7 @@ class GroqProvider(BaseLLMProvider):
 
     @staticmethod
     def _evidence_fallback(retrieval_result: Any) -> str:
-        chunks = list(getattr(retrieval_result, "vector_chunks", []) or [])
+        chunks = list(getattr(retrieval_result, "retrieved_sections", []) or [])
         if not chunks:
             return "I could not generate an answer because no document evidence was retrieved."
         passages = []

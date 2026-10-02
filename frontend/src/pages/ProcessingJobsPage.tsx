@@ -30,7 +30,7 @@ export const ProcessingJobsPage: React.FC = () => {
         <div>
           <h1 style={{ fontSize: '28px', fontWeight: 700 }}>Processing Jobs</h1>
           <p style={{ fontSize: '15px', color: 'var(--text-secondary)', marginTop: '4px' }}>
-            Monitor local parsing, chunking, embedding, and indexing jobs.
+            Monitor parsing, sectioning, optional graph extraction, and indexing jobs.
           </p>
         </div>
         <button onClick={loadJobs} className="btn-secondary" style={{ fontSize: '13px', padding: '6px 14px' }}>

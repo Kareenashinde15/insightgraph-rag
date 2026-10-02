@@ -71,7 +71,7 @@ export interface ChatMessage {
   session_id: string;
   role: 'user' | 'assistant';
   content: string;
-  retrieval_type?: 'SEMANTIC' | 'GRAPH' | 'HYBRID';
+  retrieval_type?: 'TEXT' | 'SEMANTIC' | 'GRAPH' | 'HYBRID';
   citations?: Citation[];
   graph_evidence_paths?: Array<Array<{
     source: string;
@@ -84,11 +84,10 @@ export interface ChatMessage {
     entities_identified?: string[];
     graph_facts_count?: number;
     graph_paths_count?: number;
-    vector_chunks_retrieved?: number;
+    text_sections_retrieved?: number;
     evidence_used_count?: number;
     graph_query_latency_ms?: number;
-    vector_search_latency_ms?: number;
-    embedding_latency_ms?: number;
+    text_search_latency_ms?: number;
     llm_latency_ms?: number;
     total_query_latency_ms?: number;
     citation_validation?: {
@@ -141,15 +140,14 @@ export interface SystemMetrics {
   };
   knowledge_sources: {
     total_chunks: number;
-    total_embeddings: number;
     total_indexed_sources: number;
   };
   system_status: string;
+  retrieval_mode?: string;
   latency: {
     llm_latency_ms: number;
-    embedding_latency_ms: number;
     graph_query_latency_ms: number;
-    vector_search_latency_ms: number;
+    text_search_latency_ms?: number;
     total_query_latency_ms: number;
   };
   token_usage: {
@@ -163,11 +161,4 @@ export interface SystemMetrics {
   last_query_at?: string | null;
   last_processing_at?: string | null;
   llm_provider?: string;
-  embedding?: {
-    model: string;
-    device: string;
-    source: string;
-    dimension: number;
-    model_load_error?: string | null;
-  };
 }

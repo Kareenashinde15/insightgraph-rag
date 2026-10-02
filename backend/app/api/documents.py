@@ -5,7 +5,7 @@ from pathlib import Path
 from secrets import token_hex
 from fastapi import APIRouter, UploadFile, File, HTTPException, BackgroundTasks
 from typing import List, Optional
-from backend.app.services.knowledge_service import KnowledgeService
+from backend.app.services.service_factory import get_knowledge_service
 from backend.app.models.schema import DocumentModel, ProcessingJobModel
 
 router = APIRouter(prefix="/api/documents", tags=["Documents"])
@@ -77,16 +77,16 @@ def delete_original_from_cloudinary(public_id: Optional[str]) -> None:
 
 @router.get("", response_model=List[DocumentModel])
 def list_documents():
-    ks = KnowledgeService()
+    ks = get_knowledge_service()
     return list(ks.documents.values())
 
 @router.get("/{doc_id}")
 def get_document(doc_id: str):
-    ks = KnowledgeService()
+    ks = get_knowledge_service()
     if doc_id not in ks.documents:
         raise HTTPException(status_code=404, detail="Document not found")
     doc = ks.documents[doc_id]
-    chunks = ks.document_chunks.get(doc_id, [])
+    chunks = ks.get_chunks(doc_id)
 
     # Get extracted entities and relationships for this document
     entities = [n for n in ks.graph_engine.get_all_nodes() if doc_id in n.document_ids]
@@ -101,7 +101,7 @@ def get_document(doc_id: str):
 
 @router.get("/{doc_id}/status")
 def get_document_status(doc_id: str):
-    ks = KnowledgeService()
+    ks = get_knowledge_service()
     if doc_id not in ks.documents:
         raise HTTPException(status_code=404, detail="Document not found")
     doc = ks.documents[doc_id]
@@ -117,7 +117,7 @@ def get_document_status(doc_id: str):
 
 @router.delete("/{doc_id}")
 def delete_document(doc_id: str):
-    ks = KnowledgeService()
+    ks = get_knowledge_service()
     if doc_id not in ks.documents:
         raise HTTPException(status_code=404, detail="Document not found")
 
@@ -133,23 +133,8 @@ def delete_document(doc_id: str):
             detail="The document could not be permanently deleted from Cloudinary.",
         ) from exc
 
-    # Remove document records and all derived graph/vector state.
-    del ks.documents[doc_id]
-    ks.db.delete("documents", doc_id)
-    if doc_id in ks.document_chunks:
-        del ks.document_chunks[doc_id]
-    for chunk_key in list(ks.db.load("chunks")):
-        if chunk_key.startswith(f"{doc_id}_"):
-            ks.db.delete("chunks", chunk_key)
-
-    # Clean vector store
-    ks.vector_store.delete_by_document(doc_id)
-    ks.graph_engine.delete_by_document(doc_id)
-    for job_id in [jid for jid, job in ks.jobs.items() if job.document_id == doc_id]:
-        del ks.jobs[job_id]
-        ks.db.delete("jobs", job_id)
-    ks.persist_graph()
-    ks.persist_vectors()
+    # Remove MongoDB document, sections, jobs, and optional graph state.
+    ks.delete_document_state(doc_id)
 
     # Only delete files contained in the configured upload directory.
     if storage_path:
@@ -168,7 +153,7 @@ async def upload_document(
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...)
 ):
-    ks = KnowledgeService()
+    ks = get_knowledge_service()
     original_name = (file.filename or "").strip()
     safe_name = Path(original_name).name
     extension = Path(safe_name).suffix.lower().lstrip(".")
@@ -194,6 +179,12 @@ async def upload_document(
             status_code=502,
             detail="Cloudinary upload failed. Check the server Cloudinary configuration.",
         ) from exc
+
+    if not cloudinary_public_id or not cloudinary_url:
+        raise HTTPException(
+            status_code=503,
+            detail="Cloudinary is required for the clean-slate storage architecture. Configure CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET.",
+        )
 
     with open(file_path, "wb") as buffer:
         buffer.write(content)
@@ -242,22 +233,17 @@ async def upload_document(
 
 @router.post("/{doc_id}/reprocess")
 def reprocess_document(doc_id: str, background_tasks: BackgroundTasks):
-    ks = KnowledgeService()
+    ks = get_knowledge_service()
     if doc_id not in ks.documents:
         raise HTTPException(status_code=404, detail="Document not found")
     doc = ks.documents[doc_id]
-    if not doc.storage_path or not os.path.exists(doc.storage_path):
-        raise HTTPException(status_code=409, detail="The original document is unavailable; upload it again before reprocessing")
-
-    ks.vector_store.delete_by_document(doc_id)
     ks.graph_engine.delete_by_document(doc_id)
-    ks.document_chunks.pop(doc_id, None)
-    ks.db.delete("documents", doc_id)
-    for chunk_key in list(ks.db.load("chunks")):
-        if chunk_key.startswith(f"{doc_id}_"):
-            ks.db.delete("chunks", chunk_key)
     ks.persist_graph()
-    ks.persist_vectors()
+    ks.document_chunks.pop(doc_id, None)
+    try:
+        file_path = ks.materialize_document(doc)
+    except (FileNotFoundError, OSError, ValueError) as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
 
     doc.status = "processing"
     doc.progress = 5
@@ -275,7 +261,7 @@ def reprocess_document(doc_id: str, background_tasks: BackgroundTasks):
     background_tasks.add_task(
         ks.process_document,
         document=doc,
-        file_path=doc.storage_path,
+        file_path=file_path,
         job=job
     )
     return {"message": "Reprocessing started", "job_id": job_id}

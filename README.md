@@ -1,20 +1,21 @@
-# Local Knowledge Graph + RAG Hobby App
+# InsightGraph — Vectorless Document Intelligence
 
-This is a single-user local application for uploading documents, creating local semantic embeddings, searching knowledge, and asking grounded questions through Groq. Entity and relationship extraction is optional enrichment, not a prerequisite for arbitrary PDF RAG.
+InsightGraph is a document assistant that stores original files in Cloudinary,
+stores page-aware text sections in MongoDB Atlas, retrieves evidence with
+ordinary MongoDB text search, and generates grounded answers through Groq.
 
-## Local architecture
+The application intentionally does not use embeddings, a vector database, or
+PageIndex. Entity and relationship extraction remains optional enrichment.
+
+## Architecture
 
 - React + Vite frontend
 - FastAPI backend
-- SQLite database at `data/knowledge.db`
-- Original uploads in `uploads/`
-- In-process vector search, with an optional in-process graph
-- Groq as the only external AI provider
-- Sentence Transformers for free local embeddings
-
-No Docker, PostgreSQL, Redis, Neo4j, Qdrant, or MinIO is required.
-
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the data flows, component rationale, and deliberate non-goals.
+- Cloudinary for original PDFs and other uploaded files
+- MongoDB Atlas for documents, sections, jobs, sessions, and graph data
+- MongoDB text indexes for vectorless lexical retrieval
+- Groq for grounded answer generation
+- Optional entity and relationship extraction
 
 ## Run locally
 
@@ -25,12 +26,17 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the data flows, component r
    .\.venv\Scripts\python.exe -m pip install -r backend/requirements.txt
    ```
 
-2. Configure Groq in a local `.env` or shell environment:
+2. Configure `.env`:
 
    ```text
+   STORAGE_BACKEND=mongodb
+   MONGODB_URI=mongodb+srv://username:password@cluster.example.mongodb.net/?retryWrites=true&w=majority
+   MONGODB_DATABASE=insightgraph
+   CLOUDINARY_CLOUD_NAME=your-cloud-name
+   CLOUDINARY_API_KEY=your-api-key
+   CLOUDINARY_API_SECRET=your-api-secret
    GROQ_API_KEY=your-key
    GROQ_MODEL=openai/gpt-oss-120b
-   EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
    ENABLE_KNOWLEDGE_GRAPH=false
    ```
 
@@ -48,4 +54,5 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the data flows, component r
    npm run dev
    ```
 
-The first embedding operation downloads `sentence-transformers/all-MiniLM-L6-v2` to the local model cache. Without `GROQ_API_KEY`, document upload and search still work, but generated chat answers will explain that Groq is not configured.
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and [DEPLOYMENT.md](DEPLOYMENT.md)
+for the data flow and deployment configuration.

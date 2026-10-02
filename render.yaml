@@ -12,15 +12,27 @@ services:
         value: openai/gpt-oss-120b
       - key: GROQ_BASE_URL
         value: https://api.groq.com/openai/v1
-      - key: EMBEDDING_MODEL
-        value: fallback
-      - key: EMBEDDING_DEVICE
-        value: cpu
+      - key: STORAGE_BACKEND
+        value: mongodb
+      - key: MONGODB_URI
+        sync: false
+      - key: MONGODB_DATABASE
+        value: insightgraph
       - key: ENABLE_KNOWLEDGE_GRAPH
-        # Keep the 512 MB Render instance focused on vector RAG and chat.
-        # Graph enrichment is optional and can exceed the free-plan memory limit
-        # while Cloudinary documents are recovered after a restart.
+        # Graph enrichment remains optional and is processed asynchronously.
         value: "false"
+      - key: OPENDATALOADER_HYBRID
+        value: ""
+      - key: OPENDATALOADER_HYBRID_URL
+        sync: false
+      - key: OPENDATALOADER_HYBRID_MODE
+        value: ""
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
       - key: MAX_UPLOAD_SIZE_BYTES
         value: "52428800"
       - key: CORS_ORIGINS

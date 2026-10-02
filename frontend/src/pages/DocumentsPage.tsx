@@ -75,7 +75,7 @@ export const DocumentsPage: React.FC<DocumentsPageProps> = ({ onOpenDocument }) 
   };
 
   const handleDelete = async (docId: string) => {
-    if (confirm('Are you sure you want to remove this document and its associated vectors and entities?')) {
+    if (confirm('Are you sure you want to remove this document and its indexed sections and entities?')) {
       await deleteDocument(docId);
       loadDocuments();
     }
@@ -92,7 +92,7 @@ export const DocumentsPage: React.FC<DocumentsPageProps> = ({ onOpenDocument }) 
       <div style={{ marginBottom: '24px' }}>
         <h1 style={{ fontSize: '28px', fontWeight: 700 }}>Documents</h1>
         <p style={{ fontSize: '15px', color: 'var(--text-secondary)', marginTop: '4px' }}>
-          Upload, manage, and inspect unstructured files processed into knowledge graph structures and vector embeddings.
+          Upload, manage, and inspect documents indexed into page-aware text sections for grounded answers.
         </p>
       </div>
 

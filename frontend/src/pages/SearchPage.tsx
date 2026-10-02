@@ -35,7 +35,7 @@ export const SearchPage: React.FC<SearchPageProps> = ({ onOpenDocument, onSelect
       <div style={{ marginBottom: '28px' }}>
         <h1 style={{ fontSize: '28px', fontWeight: 700 }}>Unified Knowledge Search</h1>
         <p style={{ fontSize: '15px', color: 'var(--text-secondary)', marginTop: '4px' }}>
-          Search your uploaded documents with lexical and semantic retrieval.
+          Search your uploaded documents with lexical retrieval and grounded reasoning.
         </p>
       </div>
 
@@ -66,14 +66,14 @@ export const SearchPage: React.FC<SearchPageProps> = ({ onOpenDocument, onSelect
       {/* Results Sections */}
       {results && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-          {/* Semantic document matches */}
-          {results.vector_chunks && results.vector_chunks.length > 0 && (
+          {/* Vectorless text matches */}
+          {results.sections && results.sections.length > 0 && (
             <div>
               <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <FileText size={18} color="var(--jm-dark-blue)" /> Relevant document passages ({results.vector_chunks.length})
+                <FileText size={18} color="var(--jm-dark-blue)" /> Relevant document sections ({results.sections.length})
               </h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {results.vector_chunks.map((chunk: any) => (
+                {results.sections.map((chunk: any) => (
                   <div
                     key={chunk.chunk_id}
                     className="jm-card"
@@ -83,7 +83,7 @@ export const SearchPage: React.FC<SearchPageProps> = ({ onOpenDocument, onSelect
                     <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', marginBottom: '8px' }}>
                       <span style={{ fontWeight: 700, fontSize: '13px' }}>{chunk.source || 'Uploaded document'}</span>
                       <span style={{ fontSize: '12px', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
-                        Page {chunk.page ?? '—'} · {(Number(chunk.similarity || 0) * 100).toFixed(1)}% match
+                        Page {chunk.page ?? '—'} · {(Number(chunk.similarity || 0) * 100).toFixed(1)}% text relevance
                       </span>
                     </div>
                     <div style={{ fontSize: '14px', lineHeight: 1.55, color: 'var(--text-secondary)' }}>
@@ -187,7 +187,7 @@ export const SearchPage: React.FC<SearchPageProps> = ({ onOpenDocument, onSelect
             </div>
           )}
 
-          {(!results.vector_chunks?.length && !results.entities?.length && !results.documents?.length && !results.relationships?.length) && (
+          {(!results.sections?.length && !results.entities?.length && !results.documents?.length && !results.relationships?.length) && (
             <div className="jm-card" style={{ padding: '24px', textAlign: 'center', color: 'var(--text-secondary)' }}>
               No matching passages, documents, entities, or relationships were found.
             </div>

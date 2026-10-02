@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
-from backend.app.services.knowledge_service import KnowledgeService
+from backend.app.services.service_factory import get_knowledge_service
 
 router = APIRouter(prefix="/api/search", tags=["Search"])
 
@@ -10,15 +10,15 @@ class SearchRequest(BaseModel):
     top_k: int = Field(default=5, ge=1, le=50)
     filters: Optional[Dict[str, Any]] = None
 
-@router.post("/vector")
-def vector_search(req: SearchRequest):
-    ks = KnowledgeService()
-    results = ks.vector_store.search(req.query, top_k=req.top_k, filters=req.filters)
-    return {"query": req.query, "mode": "VECTOR", "count": len(results), "results": results}
+@router.post("/text")
+def text_search(req: SearchRequest):
+    ks = get_knowledge_service()
+    results = ks.text_search(req.query, top_k=req.top_k, filters=req.filters)
+    return {"query": req.query, "mode": "TEXT", "count": len(results), "results": results}
 
 @router.post("/graph")
 def graph_search(req: SearchRequest):
-    ks = KnowledgeService()
+    ks = get_knowledge_service()
     node = ks.graph_engine.find_node_by_name(req.query)
     if node:
         nodes, edges = ks.graph_engine.get_subgraph(node.id, depth=2)
@@ -33,7 +33,7 @@ def graph_search(req: SearchRequest):
 
 @router.post("/hybrid")
 def hybrid_search(req: SearchRequest):
-    ks = KnowledgeService()
+    ks = get_knowledge_service()
     # Search entities
     q_lower = req.query.lower()
     matched_entities = [
@@ -55,8 +55,8 @@ def hybrid_search(req: SearchRequest):
         e.model_dump() for e in ks.graph_engine.get_all_edges()
         if q_lower in e.relationship_type.lower() or (e.original_text and q_lower in e.original_text.lower())
     ]
-    # Vector chunks
-    vector_results = ks.vector_store.search(req.query, top_k=req.top_k)
+    # Lexical sections; kept under the old response key for frontend compatibility.
+    text_results = ks.text_search(req.query, top_k=req.top_k)
 
     return {
         "query": req.query,
@@ -64,5 +64,6 @@ def hybrid_search(req: SearchRequest):
         "entities": matched_entities[:10],
         "documents": matched_docs[:10],
         "relationships": matched_rels[:15],
-        "vector_chunks": vector_results,
+        "sections": text_results,
+        "retrieval_mode": "vectorless_text",
     }

@@ -6,7 +6,7 @@ import { Cpu, Activity } from 'lucide-react';
 export const SettingsPage: React.FC = () => {
   const [settings, setSettings] = useState<any>({
     llm_provider: 'groq',
-    embedding_model: 'sentence-transformers/all-MiniLM-L6-v2',
+    retrieval_mode: 'vectorless_text',
     temperature: 0.2,
     top_k_retrieval: 5,
     max_graph_hops: 3,
@@ -43,7 +43,7 @@ export const SettingsPage: React.FC = () => {
       <div style={{ marginBottom: '28px' }}>
         <h1 style={{ fontSize: '28px', fontWeight: 700 }}>Platform Settings & Observability</h1>
         <p style={{ fontSize: '15px', color: 'var(--text-secondary)', marginTop: '4px' }}>
-          Configure Groq and local retrieval behavior for this hobby workspace.
+          Configure Groq and vectorless text retrieval behavior for this workspace.
         </p>
       </div>
 
@@ -71,9 +71,9 @@ export const SettingsPage: React.FC = () => {
             </div>
           </div>
           <div style={{ padding: '12px', backgroundColor: 'var(--bg-surface-secondary)', borderRadius: '8px', border: '1px solid var(--jm-border)' }}>
-            <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Vector Search Latency</div>
+            <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Text Search Latency</div>
             <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--jm-navy)' }}>
-              {metrics?.latency.vector_search_latency_ms || 0} ms
+              {metrics?.latency.text_search_latency_ms || 0} ms
             </div>
           </div>
           <div style={{ padding: '12px', backgroundColor: 'var(--bg-surface-secondary)', borderRadius: '8px', border: '1px solid var(--jm-border)' }}>
@@ -115,14 +115,9 @@ export const SettingsPage: React.FC = () => {
 
           <div>
             <label style={{ display: 'block', fontSize: '13.5px', fontWeight: 600, marginBottom: '6px' }}>
-              Embedding Model
+              Retrieval Architecture
             </label>
-            <input
-              type="text"
-              className="jm-input"
-              value={settings.embedding_model}
-              onChange={(e) => setSettings({ ...settings, embedding_model: e.target.value })}
-            />
+            <input type="text" className="jm-input" value="Vectorless MongoDB text retrieval" readOnly />
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
@@ -142,7 +137,7 @@ export const SettingsPage: React.FC = () => {
             </div>
             <div>
               <label style={{ display: 'block', fontSize: '13.5px', fontWeight: 600, marginBottom: '6px' }}>
-                Top-K Retrieved Chunks ({settings.top_k_retrieval})
+                Top-K Retrieved Sections ({settings.top_k_retrieval})
               </label>
               <input
                 type="range"

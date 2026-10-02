@@ -12,13 +12,13 @@ from backend.app.api.graph import router as graph_router
 from backend.app.api.search import router as search_router
 from backend.app.api.chat import router as chat_router
 from backend.app.api.system import router as system_router
-from backend.app.services.knowledge_service import KnowledgeService
+from backend.app.services.service_factory import get_knowledge_service
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     # Start the API immediately. Recovery runs in the background so Render's
     # health checks and chat endpoint are not blocked by document re-indexing.
-    ks = KnowledgeService()
+    ks = get_knowledge_service()
 
     async def recover_in_background() -> None:
         try:
@@ -29,7 +29,7 @@ async def lifespan(_: FastAPI):
             print(f"Cloudinary recovery could not start: {type(exc).__name__}: {exc}")
 
     recovery_task = None
-    if os.getenv("CLOUDINARY_RECOVERY_ENABLED", "true").lower() == "true":
+    if os.getenv("STORAGE_BACKEND", "mongodb").lower() != "mongodb" and os.getenv("CLOUDINARY_RECOVERY_ENABLED", "true").lower() == "true":
         recovery_task = asyncio.create_task(recover_in_background())
     print(f"Knowledge Base Online: {len(ks.documents)} documents, {len(ks.graph_engine.nodes)} entities, {len(ks.graph_engine.edges)} relationships.")
     try:

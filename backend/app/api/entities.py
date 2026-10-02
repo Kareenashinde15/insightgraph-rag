@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Query
 from typing import List, Optional
-from backend.app.services.knowledge_service import KnowledgeService
+from backend.app.services.service_factory import get_knowledge_service
 from backend.app.models.schema import GraphNodeModel, GraphEdgeModel
 
 router = APIRouter(prefix="/api/entities", tags=["Entities"])
@@ -10,7 +10,7 @@ def list_entities(
     entity_type: Optional[str] = Query(None, description="Filter by entity type (Person, Company, Project, Technology, etc.)"),
     search: Optional[str] = Query(None, description="Search query")
 ):
-    ks = KnowledgeService()
+    ks = get_knowledge_service()
     nodes = ks.graph_engine.get_all_nodes()
 
     if entity_type:
@@ -29,7 +29,7 @@ def list_entities(
 
 @router.get("/{entity_id}")
 def get_entity_details(entity_id: str):
-    ks = KnowledgeService()
+    ks = get_knowledge_service()
     node = ks.graph_engine.nodes.get(entity_id)
     if not node:
         # Try search by name
@@ -52,7 +52,7 @@ def get_entity_details(entity_id: str):
 
 @router.get("/{entity_id}/relationships", response_model=List[GraphEdgeModel])
 def get_entity_relationships(entity_id: str):
-    ks = KnowledgeService()
+    ks = get_knowledge_service()
     node = ks.graph_engine.nodes.get(entity_id) or ks.graph_engine.find_node_by_name(entity_id)
     if not node:
         raise HTTPException(status_code=404, detail="Entity not found")
@@ -64,7 +64,7 @@ def get_entity_relationships(entity_id: str):
 
 @router.get("/{entity_id}/sources")
 def get_entity_sources(entity_id: str):
-    ks = KnowledgeService()
+    ks = get_knowledge_service()
     node = ks.graph_engine.nodes.get(entity_id) or ks.graph_engine.find_node_by_name(entity_id)
     if not node:
         raise HTTPException(status_code=404, detail="Entity not found")
@@ -73,7 +73,7 @@ def get_entity_sources(entity_id: str):
     for did in node.document_ids:
         doc = ks.documents.get(did)
         if doc:
-            chunks = ks.document_chunks.get(did, [])
+            chunks = ks.get_chunks(did)
             relevant_chunks = [c for c in chunks if any(node.name.lower() in e.lower() for e in c.entities)]
             sources.append({
                 "document": doc,
